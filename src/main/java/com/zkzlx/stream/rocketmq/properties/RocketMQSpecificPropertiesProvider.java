@@ -4,11 +4,13 @@ package com.zkzlx.stream.rocketmq.properties;
 import org.springframework.cloud.stream.binder.BinderSpecificPropertiesProvider;
 
 /**
- * Container object for RocketMQ specific extended producer and consumer binding properties.
+ * Container object for RocketMQ specific extended producer and consumer binding
+ * properties.
  *
  * @author zkzlx
  */
-public class RocketMQSpecificPropertiesProvider implements BinderSpecificPropertiesProvider {
+public class RocketMQSpecificPropertiesProvider
+		implements BinderSpecificPropertiesProvider {
 
 	/**
 	 * Consumer specific binding properties. @see {@link RocketMQConsumerProperties}.
@@ -21,8 +23,8 @@ public class RocketMQSpecificPropertiesProvider implements BinderSpecificPropert
 	private RocketMQProducerProperties producer = new RocketMQProducerProperties();
 
 	/**
-	 * @return {@link RocketMQConsumerProperties}
-	 * Consumer specific binding properties. @see {@link RocketMQConsumerProperties}.
+	 * @return {@link RocketMQConsumerProperties} Consumer specific binding
+	 * properties. @see {@link RocketMQConsumerProperties}.
 	 */
 	@Override
 	public RocketMQConsumerProperties getConsumer() {
@@ -34,8 +36,8 @@ public class RocketMQSpecificPropertiesProvider implements BinderSpecificPropert
 	}
 
 	/**
-	 * @return {@link RocketMQProducerProperties}
-	 * Producer specific binding properties. @see {@link RocketMQProducerProperties}.
+	 * @return {@link RocketMQProducerProperties} Producer specific binding
+	 * properties. @see {@link RocketMQProducerProperties}.
 	 */
 	@Override
 	public RocketMQProducerProperties getProducer() {

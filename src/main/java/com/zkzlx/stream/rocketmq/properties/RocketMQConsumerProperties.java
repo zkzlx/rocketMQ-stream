@@ -6,7 +6,6 @@ import java.util.Map;
 import org.apache.rocketmq.client.consumer.AllocateMessageQueueStrategy;
 import org.apache.rocketmq.client.consumer.listener.MessageListener;
 import org.apache.rocketmq.client.consumer.store.OffsetStore;
-import org.apache.rocketmq.client.trace.TraceDispatcher;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
@@ -16,17 +15,16 @@ import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
  *
  * @author zkzlx
  */
-public class RocketMQConsumerProperties extends RocketMQCommonProperties{
-
-
+public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 
 	/**
 	 * Message model defines the way how messages are delivered to each consumer clients.
 	 * </p>
 	 *
-	 * RocketMQ supports two message models: clustering and broadcasting. If clustering is set, consumer clients with
-	 * the same {@link #consumerGroup} would only consume shards of the messages subscribed, which achieves load
-	 * balances; Conversely, if the broadcasting is set, each consumer client will consume all subscribed messages
+	 * RocketMQ supports two message models: clustering and broadcasting. If clustering is
+	 * set, consumer clients with the same {@link #group} would only consume
+	 * shards of the messages subscribed, which achieves load balances; Conversely, if the
+	 * broadcasting is set, each consumer client will consume all subscribed messages
 	 * separately.
 	 * </p>
 	 *
@@ -40,29 +38,23 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties{
 	 *
 	 * There are three consuming points:
 	 * <ul>
-	 * <li>
-	 * <code>CONSUME_FROM_LAST_OFFSET</code>: consumer clients pick up where it stopped previously.
-	 * If it were a newly booting up consumer client, according aging of the consumer group, there are two
-	 * cases:
+	 * <li><code>CONSUME_FROM_LAST_OFFSET</code>: consumer clients pick up where it
+	 * stopped previously. If it were a newly booting up consumer client, according aging
+	 * of the consumer group, there are two cases:
 	 * <ol>
-	 * <li>
-	 * if the consumer group is created so recently that the earliest message being subscribed has yet
-	 * expired, which means the consumer group represents a lately launched business, consuming will
-	 * start from the very beginning;
-	 * </li>
-	 * <li>
-	 * if the earliest message being subscribed has expired, consuming will start from the latest
-	 * messages, meaning messages born prior to the booting timestamp would be ignored.
-	 * </li>
+	 * <li>if the consumer group is created so recently that the earliest message being
+	 * subscribed has yet expired, which means the consumer group represents a lately
+	 * launched business, consuming will start from the very beginning;</li>
+	 * <li>if the earliest message being subscribed has expired, consuming will start from
+	 * the latest messages, meaning messages born prior to the booting timestamp would be
+	 * ignored.</li>
 	 * </ol>
 	 * </li>
-	 * <li>
-	 * <code>CONSUME_FROM_FIRST_OFFSET</code>: Consumer client will start from earliest messages available.
-	 * </li>
-	 * <li>
-	 * <code>CONSUME_FROM_TIMESTAMP</code>: Consumer client will start from specified timestamp, which means
-	 * messages born prior to {@link #consumeTimestamp} will be ignored
-	 * </li>
+	 * <li><code>CONSUME_FROM_FIRST_OFFSET</code>: Consumer client will start from
+	 * earliest messages available.</li>
+	 * <li><code>CONSUME_FROM_TIMESTAMP</code>: Consumer client will start from specified
+	 * timestamp, which means messages born prior to {@link #consumeTimestamp} will be
+	 * ignored</li>
 	 * </ul>
 	 */
 	private ConsumeFromWhere consumeFromWhere = ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET;
@@ -73,10 +65,12 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties{
 	 * Implying Seventeen twelve and 01 seconds on December 23, 2013 year<br>
 	 * Default backtracking consumption time Half an hour ago.
 	 */
-	private String consumeTimestamp = UtilAll.timeMillisToHumanString3(System.currentTimeMillis() - (1000 * 60 * 30));
+	private String consumeTimestamp = UtilAll
+			.timeMillisToHumanString3(System.currentTimeMillis() - (1000 * 60 * 30));
 
 	/**
-	 * Queue allocation algorithm specifying how message queues are allocated to each consumer clients.
+	 * Queue allocation algorithm specifying how message queues are allocated to each
+	 * consumer clients.
 	 */
 	private AllocateMessageQueueStrategy allocateMessageQueueStrategy;
 
@@ -116,14 +110,16 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties{
 	private int consumeConcurrentlyMaxSpan = 2000;
 
 	/**
-	 * Flow control threshold on queue level, each message queue will cache at most 1000 messages by default,
-	 * Consider the {@code pullBatchSize}, the instantaneous value may exceed the limit
+	 * Flow control threshold on queue level, each message queue will cache at most 1000
+	 * messages by default, Consider the {@code pullBatchSize}, the instantaneous value
+	 * may exceed the limit
 	 */
 	private int pullThresholdForQueue = 1000;
 
 	/**
-	 * Limit the cached message size on queue level, each message queue will cache at most 100 MiB messages by default,
-	 * Consider the {@code pullBatchSize}, the instantaneous value may exceed the limit
+	 * Limit the cached message size on queue level, each message queue will cache at most
+	 * 100 MiB messages by default, Consider the {@code pullBatchSize}, the instantaneous
+	 * value may exceed the limit
 	 *
 	 * <p>
 	 * The size of a message only measured by message body, so it's not accurate
@@ -133,22 +129,23 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties{
 	/**
 	 * Flow control threshold on topic level, default value is -1(Unlimited)
 	 * <p>
-	 * The value of {@code pullThresholdForQueue} will be overwrote and calculated based on
-	 * {@code pullThresholdForTopic} if it is't unlimited
+	 * The value of {@code pullThresholdForQueue} will be overwrote and calculated based
+	 * on {@code pullThresholdForTopic} if it is't unlimited
 	 * <p>
-	 * For example, if the value of pullThresholdForTopic is 1000 and 10 message queues are assigned to this consumer,
-	 * then pullThresholdForQueue will be set to 100
+	 * For example, if the value of pullThresholdForTopic is 1000 and 10 message queues
+	 * are assigned to this consumer, then pullThresholdForQueue will be set to 100
 	 */
 	private int pullThresholdForTopic = -1;
 
 	/**
 	 * Limit the cached message size on topic level, default value is -1 MiB(Unlimited)
 	 * <p>
-	 * The value of {@code pullThresholdSizeForQueue} will be overwrote and calculated based on
-	 * {@code pullThresholdSizeForTopic} if it is't unlimited
+	 * The value of {@code pullThresholdSizeForQueue} will be overwrote and calculated
+	 * based on {@code pullThresholdSizeForTopic} if it is't unlimited
 	 * <p>
-	 * For example, if the value of pullThresholdSizeForTopic is 1000 MiB and 10 message queues are
-	 * assigned to this consumer, then pullThresholdSizeForQueue will be set to 100 MiB
+	 * For example, if the value of pullThresholdSizeForTopic is 1000 MiB and 10 message
+	 * queues are assigned to this consumer, then pullThresholdSizeForQueue will be set to
+	 * 100 MiB
 	 */
 	private int pullThresholdSizeForTopic = -1;
 
@@ -181,13 +178,14 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties{
 	 * Max re-consume times. -1 means 16 times.
 	 * </p>
 	 *
-	 * If messages are re-consumed more than {@link #maxReconsumeTimes} before success, it's be directed to a deletion
-	 * queue waiting.
+	 * If messages are re-consumed more than {@link #maxReconsumeTimes} before success,
+	 * it's be directed to a deletion queue waiting.
 	 */
 	private int maxReconsumeTimes = -1;
 
 	/**
-	 * Suspending pulling time for cases requiring slow pulling like flow-control scenario.
+	 * Suspending pulling time for cases requiring slow pulling like flow-control
+	 * scenario.
 	 */
 	private long suspendCurrentQueueTimeMillis = 1000;
 
@@ -197,9 +195,9 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties{
 	private long consumeTimeout = 15;
 
 	/**
-	 * Maximum time to await message consuming when shutdown consumer, 0 indicates no await.
+	 * Maximum time to await message consuming when shutdown consumer, 0 indicates no
+	 * await.
 	 */
 	private long awaitTerminationMillisWhenShutdown = 0;
-
 
 }
