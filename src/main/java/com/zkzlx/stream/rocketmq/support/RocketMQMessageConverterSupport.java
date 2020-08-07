@@ -67,6 +67,7 @@ public class RocketMQMessageConverterSupport {
 
     public org.apache.rocketmq.common.message.Message convertMQMessage(String destination,Message<?> source) {
         Message<?> message = messageConverter.toMessage(source.getPayload(), source.getHeaders());
+        assert message != null;
         MessageBuilder<?> builder = MessageBuilder.fromMessage(message);
         builder.setHeaderIfAbsent(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.TEXT_PLAIN);
         message = builder.build();

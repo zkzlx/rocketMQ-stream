@@ -4,7 +4,7 @@ import com.zkzlx.stream.rocketmq.contants.RocketMQConst;
 import com.zkzlx.stream.rocketmq.properties.RocketMQBinderConfigurationProperties;
 import com.zkzlx.stream.rocketmq.properties.RocketMQProducerProperties;
 import com.zkzlx.stream.rocketmq.properties.RocketMQProducerProperties.SendType;
-import com.zkzlx.stream.rocketmq.support.RocketMQContainerSupport;
+import com.zkzlx.stream.rocketmq.support.RocketMQProducerConsumerSupport;
 import com.zkzlx.stream.rocketmq.support.RocketMQMessageConverterSupport;
 
 import org.apache.rocketmq.client.exception.MQBrokerException;
@@ -67,7 +67,7 @@ public class RocketMQMessageHandler extends AbstractMessageHandler
 		this.destination = destination;
 		this.producerProperties = producerProperties;
 		this.partitioningInterceptor = partitioningInterceptor;
-		this.defaultMQProducer = RocketMQContainerSupport.initRocketMQProducer(
+		this.defaultMQProducer = RocketMQProducerConsumerSupport.initRocketMQProducer(
 				destination, rocketMQBinderConfigurationProperties, producerProperties);
 	}
 

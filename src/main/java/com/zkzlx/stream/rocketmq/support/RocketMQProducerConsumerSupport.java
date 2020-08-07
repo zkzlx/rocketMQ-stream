@@ -27,8 +27,8 @@ import com.zkzlx.stream.rocketmq.utils.RocketMQUtils;
  *
  * @author zkz
  */
-public class RocketMQContainerSupport {
-    private final static Logger log = LoggerFactory.getLogger(RocketMQContainerSupport.class);
+public class RocketMQProducerConsumerSupport {
+    private final static Logger log = LoggerFactory.getLogger(RocketMQProducerConsumerSupport.class);
 
 
     public static DefaultMQProducer initRocketMQProducer(ProducerDestination destination
