@@ -1,11 +1,27 @@
+/*
+ * Copyright (C) 2018 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.zkzlx.stream.rocketmq.handler;
 
 import com.zkzlx.stream.rocketmq.contants.RocketMQConst;
 import com.zkzlx.stream.rocketmq.properties.RocketMQBinderConfigurationProperties;
 import com.zkzlx.stream.rocketmq.properties.RocketMQProducerProperties;
 import com.zkzlx.stream.rocketmq.properties.RocketMQProducerProperties.SendType;
-import com.zkzlx.stream.rocketmq.support.RocketMQProducerConsumerSupport;
 import com.zkzlx.stream.rocketmq.support.RocketMQMessageConverterSupport;
+import com.zkzlx.stream.rocketmq.support.RocketMQProducerConsumerSupport;
 
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -20,12 +36,9 @@ import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.beans.BeansException;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.binding.MessageConverterConfigurer;
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.Lifecycle;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.integration.support.DefaultErrorMessageStrategy;
@@ -37,8 +50,7 @@ import org.springframework.messaging.MessagingException;
 /**
  * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
-public class RocketMQMessageHandler extends AbstractMessageHandler
-		implements ApplicationContextAware, Lifecycle {
+public class RocketMQMessageHandler extends AbstractMessageHandler implements  Lifecycle {
 
 	private final static Logger log = LoggerFactory
 			.getLogger(RocketMQMessageHandler.class);
@@ -50,31 +62,23 @@ public class RocketMQMessageHandler extends AbstractMessageHandler
 
 	private ErrorMessageStrategy errorMessageStrategy = new DefaultErrorMessageStrategy();
 	private MessageChannel sendFailureChannel;
-	private ApplicationContext applicationContext;
+	private MessageConverterConfigurer.PartitioningInterceptor partitioningInterceptor;
 
-	private final RocketMQBinderConfigurationProperties rocketMQBinderConfigurationProperties;
-	private final ProducerDestination destination;
-	private final ExtendedProducerProperties<RocketMQProducerProperties> producerProperties;
-	private final MessageConverterConfigurer.PartitioningInterceptor partitioningInterceptor;
+
+	private final RocketMQBinderConfigurationProperties binderConfigurationProperties;
+	private final ProducerDestination producerDestination;
+	private final ExtendedProducerProperties<RocketMQProducerProperties> extendedProducerProperties;
 	private final DefaultMQProducer defaultMQProducer;
 
 	public RocketMQMessageHandler(
-			RocketMQBinderConfigurationProperties rocketMQBinderConfigurationProperties,
-			ExtendedProducerProperties<RocketMQProducerProperties> producerProperties,
-			MessageConverterConfigurer.PartitioningInterceptor partitioningInterceptor,
-			ProducerDestination destination) {
-		this.rocketMQBinderConfigurationProperties = rocketMQBinderConfigurationProperties;
-		this.destination = destination;
-		this.producerProperties = producerProperties;
-		this.partitioningInterceptor = partitioningInterceptor;
+			RocketMQBinderConfigurationProperties binderConfigurationProperties,
+			ExtendedProducerProperties<RocketMQProducerProperties> extendedProducerProperties,
+			ProducerDestination producerDestination) {
+		this.binderConfigurationProperties = binderConfigurationProperties;
+		this.producerDestination = producerDestination;
+		this.extendedProducerProperties = extendedProducerProperties;
 		this.defaultMQProducer = RocketMQProducerConsumerSupport.initRocketMQProducer(
-				destination, rocketMQBinderConfigurationProperties, producerProperties);
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext)
-			throws BeansException {
-		this.applicationContext = applicationContext;
+				producerDestination, binderConfigurationProperties, extendedProducerProperties);
 	}
 
 	@Override
@@ -89,7 +93,7 @@ public class RocketMQMessageHandler extends AbstractMessageHandler
 
 	@Override
 	public void stop() {
-
+		defaultMQProducer.shutdown();
 		running = false;
 	}
 
@@ -101,11 +105,10 @@ public class RocketMQMessageHandler extends AbstractMessageHandler
 	@Override
 	protected void handleMessageInternal(Message<?> message) {
 		try {
-
-			SendResult sendResult = null;
+			SendResult sendResult;
 			if (defaultMQProducer instanceof TransactionMQProducer) {
 				sendResult = defaultMQProducer.sendMessageInTransaction(
-						messageConverterSupport.convertMQMessage(destination.getName(),
+						messageConverterSupport.convertMQMessage(producerDestination.getName(),
 								message),
 						message.getHeaders()
 								.get(RocketMQConst.PROPERTY_TRANSACTIONAL_ARGS));
@@ -121,8 +124,8 @@ public class RocketMQMessageHandler extends AbstractMessageHandler
 				MessageQueueSelector messageQueueSelector = null;
 				// is orderly ?
 				if (null != selectorArg) {
-					messageQueueSelector = applicationContext.getBean(
-							producerProperties.getExtension().getMessageQueueSelector(),
+					messageQueueSelector = this.getApplicationContext().getBean(
+							extendedProducerProperties.getExtension().getMessageQueueSelector(),
 							MessageQueueSelector.class);
 					if (null == messageQueueSelector) {
 						messageQueueSelector = new SelectMessageQueueByHash();
@@ -130,7 +133,6 @@ public class RocketMQMessageHandler extends AbstractMessageHandler
 				}
 				sendResult = this.send(message, messageQueueSelector, selectorArg);
 			}
-
 			if (sendResult != null
 					&& !sendResult.getSendStatus().equals(SendStatus.SEND_OK)) {
 				if (getSendFailureChannel() != null) {
@@ -159,21 +161,21 @@ public class RocketMQMessageHandler extends AbstractMessageHandler
 			Object args) throws RemotingException, MQClientException,
 			InterruptedException, MQBrokerException {
 		org.apache.rocketmq.common.message.Message mqMessage = messageConverterSupport
-				.convertMQMessage(destination.getName(), message);
-		if (SendType.OneWay.equalsName(producerProperties.getExtension().getSendType())) {
+				.convertMQMessage(producerDestination.getName(), message);
+		if (SendType.OneWay.equalsName(extendedProducerProperties.getExtension().getSendType())) {
 			if (null != selector) {
 				defaultMQProducer.sendOneway(mqMessage, selector, args);
 			}
 			defaultMQProducer.sendOneway(mqMessage);
 			return null;
 		}
-		if (SendType.Sync.equalsName(producerProperties.getExtension().getSendType())) {
+		if (SendType.Sync.equalsName(extendedProducerProperties.getExtension().getSendType())) {
 			if (null != selector) {
 				return defaultMQProducer.send(mqMessage, selector, args);
 			}
 			return defaultMQProducer.send(mqMessage);
 		}
-		if (SendType.Async.equalsName(producerProperties.getExtension().getSendType())) {
+		if (SendType.Async.equalsName(extendedProducerProperties.getExtension().getSendType())) {
 			if (null != selector) {
 				defaultMQProducer.send(mqMessage, selector, args,
 						this.getSendCallback(message));
@@ -184,8 +186,8 @@ public class RocketMQMessageHandler extends AbstractMessageHandler
 	}
 
 	private SendCallback getSendCallback(Message<?> message) {
-		SendCallback sendCallback = applicationContext.getBean(
-				producerProperties.getExtension().getSendCallBack(), SendCallback.class);
+		SendCallback sendCallback = this.getApplicationContext().getBean(
+				extendedProducerProperties.getExtension().getSendCallBack(), SendCallback.class);
 		if (null == sendCallback) {
 			sendCallback = new SendCallback() {
 				@Override

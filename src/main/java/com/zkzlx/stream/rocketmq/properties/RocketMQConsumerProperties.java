@@ -1,10 +1,28 @@
+/*
+ * Copyright (C) 2018 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.zkzlx.stream.rocketmq.properties;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.rocketmq.client.consumer.AllocateMessageQueueStrategy;
+import org.apache.rocketmq.client.consumer.MessageQueueListener;
 import org.apache.rocketmq.client.consumer.listener.MessageListener;
+import org.apache.rocketmq.client.consumer.rebalance.AllocateMessageQueueAveragely;
 import org.apache.rocketmq.client.consumer.store.OffsetStore;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
@@ -200,4 +218,358 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 	 */
 	private long awaitTerminationMillisWhenShutdown = 0;
 
+
+
+
+
+
+	/**
+	 * Long polling mode, the Consumer connection max suspend time, it is not recommended to modify
+	 */
+	private long brokerSuspendMaxTimeMillis = 1000 * 20;
+
+	/**
+	 * Long polling mode, the Consumer connection timeout(must greater than brokerSuspendMaxTimeMillis), it is not
+	 * recommended to modify
+	 */
+	private long consumerTimeoutMillisWhenSuspend = 1000 * 30;
+
+	/**
+	 * The socket timeout in milliseconds
+	 */
+	private long consumerPullTimeoutMillis = 1000 * 10;
+
+	/**
+	 * Message queue listener
+	 */
+	private MessageQueueListener messageQueueListener;
+
+
+	/**
+	 * The flag for auto commit offset
+	 */
+	private boolean autoCommit = true;
+
+	/**
+	 * Pull thread number
+	 */
+	private int pullThreadNums = 20;
+
+	/**
+	 * Minimum commit offset interval time in milliseconds.
+	 */
+	private static final long MIN_AUTOCOMMIT_INTERVAL_MILLIS = 1000;
+
+	/**
+	 * Maximum commit offset interval time in milliseconds.
+	 */
+	private long autoCommitIntervalMillis = 5 * 1000;
+
+
+	/**
+	 * Flow control threshold for consume request, each consumer will cache at most 10000 consume requests by default.
+	 * Consider the {@code pullBatchSize}, the instantaneous value may exceed the limit
+	 */
+	private long pullThresholdForAll = 10000;
+
+	/**
+	 * Consume max span offset.
+	 */
+	private int consumeMaxSpan = 2000;
+
+
+	/**
+	 * The poll timeout in milliseconds
+	 */
+	private long pollTimeoutMillis = 1000 * 5;
+
+	/**
+	 * Interval time in in milliseconds for checking changes in topic metadata.
+	 */
+	private long topicMetadataCheckIntervalMillis = 30 * 1000;
+
+
+	public MessageModel getMessageModel() {
+		return messageModel;
+	}
+
+	public void setMessageModel(MessageModel messageModel) {
+		this.messageModel = messageModel;
+	}
+
+	public ConsumeFromWhere getConsumeFromWhere() {
+		return consumeFromWhere;
+	}
+
+	public void setConsumeFromWhere(ConsumeFromWhere consumeFromWhere) {
+		this.consumeFromWhere = consumeFromWhere;
+	}
+
+	public String getConsumeTimestamp() {
+		return consumeTimestamp;
+	}
+
+	public void setConsumeTimestamp(String consumeTimestamp) {
+		this.consumeTimestamp = consumeTimestamp;
+	}
+
+	public AllocateMessageQueueStrategy getAllocateMessageQueueStrategy() {
+		return allocateMessageQueueStrategy;
+	}
+
+	public void setAllocateMessageQueueStrategy(AllocateMessageQueueStrategy allocateMessageQueueStrategy) {
+		this.allocateMessageQueueStrategy = allocateMessageQueueStrategy;
+	}
+
+	public Map<String, String> getSubscription() {
+		return subscription;
+	}
+
+	public void setSubscription(Map<String, String> subscription) {
+		this.subscription = subscription;
+	}
+
+	public MessageListener getMessageListener() {
+		return messageListener;
+	}
+
+	public void setMessageListener(MessageListener messageListener) {
+		this.messageListener = messageListener;
+	}
+
+	public OffsetStore getOffsetStore() {
+		return offsetStore;
+	}
+
+	public void setOffsetStore(OffsetStore offsetStore) {
+		this.offsetStore = offsetStore;
+	}
+
+	public int getConsumeThreadMin() {
+		return consumeThreadMin;
+	}
+
+	public void setConsumeThreadMin(int consumeThreadMin) {
+		this.consumeThreadMin = consumeThreadMin;
+	}
+
+	public int getConsumeThreadMax() {
+		return consumeThreadMax;
+	}
+
+	public void setConsumeThreadMax(int consumeThreadMax) {
+		this.consumeThreadMax = consumeThreadMax;
+	}
+
+	public long getAdjustThreadPoolNumsThreshold() {
+		return adjustThreadPoolNumsThreshold;
+	}
+
+	public void setAdjustThreadPoolNumsThreshold(long adjustThreadPoolNumsThreshold) {
+		this.adjustThreadPoolNumsThreshold = adjustThreadPoolNumsThreshold;
+	}
+
+	public int getConsumeConcurrentlyMaxSpan() {
+		return consumeConcurrentlyMaxSpan;
+	}
+
+	public void setConsumeConcurrentlyMaxSpan(int consumeConcurrentlyMaxSpan) {
+		this.consumeConcurrentlyMaxSpan = consumeConcurrentlyMaxSpan;
+	}
+
+	public int getPullThresholdForQueue() {
+		return pullThresholdForQueue;
+	}
+
+	public void setPullThresholdForQueue(int pullThresholdForQueue) {
+		this.pullThresholdForQueue = pullThresholdForQueue;
+	}
+
+	public int getPullThresholdSizeForQueue() {
+		return pullThresholdSizeForQueue;
+	}
+
+	public void setPullThresholdSizeForQueue(int pullThresholdSizeForQueue) {
+		this.pullThresholdSizeForQueue = pullThresholdSizeForQueue;
+	}
+
+	public int getPullThresholdForTopic() {
+		return pullThresholdForTopic;
+	}
+
+	public void setPullThresholdForTopic(int pullThresholdForTopic) {
+		this.pullThresholdForTopic = pullThresholdForTopic;
+	}
+
+	public int getPullThresholdSizeForTopic() {
+		return pullThresholdSizeForTopic;
+	}
+
+	public void setPullThresholdSizeForTopic(int pullThresholdSizeForTopic) {
+		this.pullThresholdSizeForTopic = pullThresholdSizeForTopic;
+	}
+
+	public long getPullInterval() {
+		return pullInterval;
+	}
+
+	public void setPullInterval(long pullInterval) {
+		this.pullInterval = pullInterval;
+	}
+
+	public int getConsumeMessageBatchMaxSize() {
+		return consumeMessageBatchMaxSize;
+	}
+
+	public void setConsumeMessageBatchMaxSize(int consumeMessageBatchMaxSize) {
+		this.consumeMessageBatchMaxSize = consumeMessageBatchMaxSize;
+	}
+
+	public int getPullBatchSize() {
+		return pullBatchSize;
+	}
+
+	public void setPullBatchSize(int pullBatchSize) {
+		this.pullBatchSize = pullBatchSize;
+	}
+
+	public boolean isPostSubscriptionWhenPull() {
+		return postSubscriptionWhenPull;
+	}
+
+	public void setPostSubscriptionWhenPull(boolean postSubscriptionWhenPull) {
+		this.postSubscriptionWhenPull = postSubscriptionWhenPull;
+	}
+
+	public boolean isUnitMode() {
+		return unitMode;
+	}
+
+	public void setUnitMode(boolean unitMode) {
+		this.unitMode = unitMode;
+	}
+
+	public int getMaxReconsumeTimes() {
+		return maxReconsumeTimes;
+	}
+
+	public void setMaxReconsumeTimes(int maxReconsumeTimes) {
+		this.maxReconsumeTimes = maxReconsumeTimes;
+	}
+
+	public long getSuspendCurrentQueueTimeMillis() {
+		return suspendCurrentQueueTimeMillis;
+	}
+
+	public void setSuspendCurrentQueueTimeMillis(long suspendCurrentQueueTimeMillis) {
+		this.suspendCurrentQueueTimeMillis = suspendCurrentQueueTimeMillis;
+	}
+
+	public long getConsumeTimeout() {
+		return consumeTimeout;
+	}
+
+	public void setConsumeTimeout(long consumeTimeout) {
+		this.consumeTimeout = consumeTimeout;
+	}
+
+	public long getAwaitTerminationMillisWhenShutdown() {
+		return awaitTerminationMillisWhenShutdown;
+	}
+
+	public void setAwaitTerminationMillisWhenShutdown(long awaitTerminationMillisWhenShutdown) {
+		this.awaitTerminationMillisWhenShutdown = awaitTerminationMillisWhenShutdown;
+	}
+
+	public long getBrokerSuspendMaxTimeMillis() {
+		return brokerSuspendMaxTimeMillis;
+	}
+
+	public void setBrokerSuspendMaxTimeMillis(long brokerSuspendMaxTimeMillis) {
+		this.brokerSuspendMaxTimeMillis = brokerSuspendMaxTimeMillis;
+	}
+
+	public long getConsumerTimeoutMillisWhenSuspend() {
+		return consumerTimeoutMillisWhenSuspend;
+	}
+
+	public void setConsumerTimeoutMillisWhenSuspend(long consumerTimeoutMillisWhenSuspend) {
+		this.consumerTimeoutMillisWhenSuspend = consumerTimeoutMillisWhenSuspend;
+	}
+
+	public long getConsumerPullTimeoutMillis() {
+		return consumerPullTimeoutMillis;
+	}
+
+	public void setConsumerPullTimeoutMillis(long consumerPullTimeoutMillis) {
+		this.consumerPullTimeoutMillis = consumerPullTimeoutMillis;
+	}
+
+	public MessageQueueListener getMessageQueueListener() {
+		return messageQueueListener;
+	}
+
+	public void setMessageQueueListener(MessageQueueListener messageQueueListener) {
+		this.messageQueueListener = messageQueueListener;
+	}
+
+	public boolean isAutoCommit() {
+		return autoCommit;
+	}
+
+	public void setAutoCommit(boolean autoCommit) {
+		this.autoCommit = autoCommit;
+	}
+
+	public int getPullThreadNums() {
+		return pullThreadNums;
+	}
+
+	public void setPullThreadNums(int pullThreadNums) {
+		this.pullThreadNums = pullThreadNums;
+	}
+
+	public static long getMinAutocommitIntervalMillis() {
+		return MIN_AUTOCOMMIT_INTERVAL_MILLIS;
+	}
+
+	public long getAutoCommitIntervalMillis() {
+		return autoCommitIntervalMillis;
+	}
+
+	public void setAutoCommitIntervalMillis(long autoCommitIntervalMillis) {
+		this.autoCommitIntervalMillis = autoCommitIntervalMillis;
+	}
+
+	public long getPullThresholdForAll() {
+		return pullThresholdForAll;
+	}
+
+	public void setPullThresholdForAll(long pullThresholdForAll) {
+		this.pullThresholdForAll = pullThresholdForAll;
+	}
+
+	public int getConsumeMaxSpan() {
+		return consumeMaxSpan;
+	}
+
+	public void setConsumeMaxSpan(int consumeMaxSpan) {
+		this.consumeMaxSpan = consumeMaxSpan;
+	}
+
+	public long getPollTimeoutMillis() {
+		return pollTimeoutMillis;
+	}
+
+	public void setPollTimeoutMillis(long pollTimeoutMillis) {
+		this.pollTimeoutMillis = pollTimeoutMillis;
+	}
+
+	public long getTopicMetadataCheckIntervalMillis() {
+		return topicMetadataCheckIntervalMillis;
+	}
+
+	public void setTopicMetadataCheckIntervalMillis(long topicMetadataCheckIntervalMillis) {
+		this.topicMetadataCheckIntervalMillis = topicMetadataCheckIntervalMillis;
+	}
 }
