@@ -16,10 +16,7 @@
 
 package com.zkzlx.stream.rocketmq.properties;
 
-import org.apache.rocketmq.client.consumer.AllocateMessageQueueStrategy;
 import org.apache.rocketmq.client.consumer.MessageQueueListener;
-import org.apache.rocketmq.client.consumer.listener.MessageListener;
-import org.apache.rocketmq.client.consumer.store.OffsetStore;
 import org.apache.rocketmq.client.trace.TraceDispatcher;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
@@ -50,13 +47,13 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 	/**
 	 * Offset Storage
 	 */
-	private OffsetStore offsetStore;
+	private String offsetStore;
 
 	/**
 	 * Queue allocation algorithm specifying how message queues are allocated to each
 	 * consumer clients.
 	 */
-	private AllocateMessageQueueStrategy allocateMessageQueueStrategy;
+	private String allocateMessageQueueStrategy;
 
 	/**
 	 * Maximum number of messages pulled each time.
@@ -137,19 +134,19 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 		this.messageModel = messageModel;
 	}
 
-	public OffsetStore getOffsetStore() {
+	public String getOffsetStore() {
 		return offsetStore;
 	}
 
-	public void setOffsetStore(OffsetStore offsetStore) {
+	public void setOffsetStore(String offsetStore) {
 		this.offsetStore = offsetStore;
 	}
 
-	public AllocateMessageQueueStrategy getAllocateMessageQueueStrategy() {
+	public String getAllocateMessageQueueStrategy() {
 		return allocateMessageQueueStrategy;
 	}
 
-	public void setAllocateMessageQueueStrategy(AllocateMessageQueueStrategy allocateMessageQueueStrategy) {
+	public void setAllocateMessageQueueStrategy(String allocateMessageQueueStrategy) {
 		this.allocateMessageQueueStrategy = allocateMessageQueueStrategy;
 	}
 
@@ -226,7 +223,7 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 		/**
 		 * Message listener
 		 */
-		private MessageListener messageListener;
+		private String messageListener;
 
 		/**
 		 * Threshold for dynamic adjustment of the number of thread pool
@@ -308,11 +305,11 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 		private TraceDispatcher traceDispatcher = null;
 
 
-		public MessageListener getMessageListener() {
+		public String getMessageListener() {
 			return messageListener;
 		}
 
-		public void setMessageListener(MessageListener messageListener) {
+		public void setMessageListener(String messageListener) {
 			this.messageListener = messageListener;
 		}
 
