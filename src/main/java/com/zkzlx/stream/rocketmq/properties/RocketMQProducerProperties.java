@@ -72,6 +72,10 @@ public class RocketMQProducerProperties extends RocketMQCommonProperties {
 
 	private String messageQueueSelector;
 
+	private String errorMessageStrategy;
+
+	private String sendFailureChannel;
+
 	public int getSendMsgTimeout() {
 		return sendMsgTimeout;
 	}
@@ -168,4 +172,19 @@ public class RocketMQProducerProperties extends RocketMQCommonProperties {
 		}
 	}
 
+	public String getErrorMessageStrategy() {
+		return errorMessageStrategy;
+	}
+
+	public void setErrorMessageStrategy(String errorMessageStrategy) {
+		this.errorMessageStrategy = errorMessageStrategy;
+	}
+
+	public String getSendFailureChannel() {
+		return sendFailureChannel;
+	}
+
+	public void setSendFailureChannel(String sendFailureChannel) {
+		this.sendFailureChannel = sendFailureChannel;
+	}
 }

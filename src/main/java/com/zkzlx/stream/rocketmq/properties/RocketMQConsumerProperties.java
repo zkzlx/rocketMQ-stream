@@ -16,17 +16,13 @@
 
 package com.zkzlx.stream.rocketmq.properties;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.rocketmq.client.consumer.AllocateMessageQueueStrategy;
 import org.apache.rocketmq.client.consumer.MessageQueueListener;
-import org.apache.rocketmq.client.consumer.listener.MessageListener;
-import org.apache.rocketmq.client.consumer.rebalance.AllocateMessageQueueAveragely;
-import org.apache.rocketmq.client.consumer.store.OffsetStore;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Extended consumer properties for RocketMQ binder.
@@ -90,7 +86,7 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 	 * Queue allocation algorithm specifying how message queues are allocated to each
 	 * consumer clients.
 	 */
-	private AllocateMessageQueueStrategy allocateMessageQueueStrategy;
+	private String allocateMessageQueueStrategy;
 
 	/**
 	 * Subscription relationship
@@ -100,12 +96,12 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 	/**
 	 * Message listener
 	 */
-	private MessageListener messageListener;
+	private String messageListener;
 
 	/**
 	 * Offset Storage
 	 */
-	private OffsetStore offsetStore;
+	private String offsetStore;
 
 	/**
 	 * Minimum consumer thread number
@@ -313,36 +309,12 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 		this.consumeTimestamp = consumeTimestamp;
 	}
 
-	public AllocateMessageQueueStrategy getAllocateMessageQueueStrategy() {
-		return allocateMessageQueueStrategy;
-	}
-
-	public void setAllocateMessageQueueStrategy(AllocateMessageQueueStrategy allocateMessageQueueStrategy) {
-		this.allocateMessageQueueStrategy = allocateMessageQueueStrategy;
-	}
-
 	public Map<String, String> getSubscription() {
 		return subscription;
 	}
 
 	public void setSubscription(Map<String, String> subscription) {
 		this.subscription = subscription;
-	}
-
-	public MessageListener getMessageListener() {
-		return messageListener;
-	}
-
-	public void setMessageListener(MessageListener messageListener) {
-		this.messageListener = messageListener;
-	}
-
-	public OffsetStore getOffsetStore() {
-		return offsetStore;
-	}
-
-	public void setOffsetStore(OffsetStore offsetStore) {
-		this.offsetStore = offsetStore;
 	}
 
 	public int getConsumeThreadMin() {
@@ -571,5 +543,29 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 
 	public void setTopicMetadataCheckIntervalMillis(long topicMetadataCheckIntervalMillis) {
 		this.topicMetadataCheckIntervalMillis = topicMetadataCheckIntervalMillis;
+	}
+
+	public String getAllocateMessageQueueStrategy() {
+		return allocateMessageQueueStrategy;
+	}
+
+	public void setAllocateMessageQueueStrategy(String allocateMessageQueueStrategy) {
+		this.allocateMessageQueueStrategy = allocateMessageQueueStrategy;
+	}
+
+	public String getMessageListener() {
+		return messageListener;
+	}
+
+	public void setMessageListener(String messageListener) {
+		this.messageListener = messageListener;
+	}
+
+	public String getOffsetStore() {
+		return offsetStore;
+	}
+
+	public void setOffsetStore(String offsetStore) {
+		this.offsetStore = offsetStore;
 	}
 }
