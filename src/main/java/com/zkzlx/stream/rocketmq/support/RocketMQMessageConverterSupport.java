@@ -19,9 +19,12 @@ package com.zkzlx.stream.rocketmq.support;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.apache.rocketmq.common.message.MessageConst;
+import org.apache.rocketmq.common.message.MessageExt;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.converter.ByteArrayMessageConverter;
@@ -31,6 +34,7 @@ import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.StringUtils;
 
@@ -81,7 +85,47 @@ public class RocketMQMessageConverterSupport {
     }
 
 
-    public org.apache.rocketmq.common.message.Message convertMQMessage(String destination,Message<?> source) {
+	public List<Message> convertMessage2Spring(List<MessageExt> messageExtList) {
+		List<Message> list = messageExtList.stream().map(message -> {
+			MessageBuilder messageBuilder = MessageBuilder.withPayload(message.getBody())
+					.setHeader(toRocketHeaderKey(RocketMQConst.USER_KEYS), message.getKeys())
+					.setHeader(toRocketHeaderKey(RocketMQConst.USER_KEYS), message.getTags())
+					.setHeader(toRocketHeaderKey(RocketMQConst.USER_TOPIC), message.getTopic())
+					.setHeader(toRocketHeaderKey(RocketMQConst.USER_MESSAGE_ID),
+							message.getMsgId())
+					.setHeader(toRocketHeaderKey(RocketMQConst.USER_BORN_TIMESTAMP),
+							message.getBornTimestamp())
+					.setHeader(toRocketHeaderKey(RocketMQConst.USER_BORN_HOST),
+							message.getBornHostString())
+					.setHeader(toRocketHeaderKey(RocketMQConst.USER_FLAG), message.getFlag())
+					.setHeader(toRocketHeaderKey(RocketMQConst.USER_QUEUE_ID),
+							message.getQueueId())
+					.setHeader(toRocketHeaderKey(RocketMQConst.USER_SYS_FLAG),
+							message.getSysFlag())
+					.setHeader(toRocketHeaderKey(RocketMQConst.USER_TRANSACTION_ID),
+							message.getTransactionId());
+			addUserProperties(message.getProperties(), messageBuilder);
+			return messageBuilder.build();
+		}).collect(Collectors.toList());
+		return list;
+	}
+
+    public static String toRocketHeaderKey(String rawKey) {
+        return "rocketmq-" + rawKey;
+    }
+
+    private static void addUserProperties(Map<String, String> properties, MessageBuilder messageBuilder) {
+        if (!CollectionUtils.isEmpty(properties)) {
+            properties.forEach((key, val) -> {
+                if (!MessageConst.STRING_HASH_SET.contains(key) && !MessageHeaders.ID.equals(key)
+                        && !MessageHeaders.TIMESTAMP.equals(key)) {
+                    messageBuilder.setHeader(key, val);
+                }
+            });
+        }
+    }
+
+    public org.apache.rocketmq.common.message.Message convertMessage2MQ(String destination, Message<?> source) {
         Message<?> message = messageConverter.toMessage(source.getPayload(), source.getHeaders());
         assert message != null;
         MessageBuilder<?> builder = MessageBuilder.fromMessage(message);
@@ -147,7 +191,7 @@ public class RocketMQMessageConverterSupport {
             int flag = 0;
             int delayLevel = 0;
             try {
-                Object delayLevelObj = headers.get(RocketMQConst.PROPERTY_SELECTOR_ARGS);
+                Object delayLevelObj = headers.get(RocketMQConst.USER_SELECTOR_ARGS);
                 if (delayLevelObj instanceof Number) {
                     delayLevel = ((Number) delayLevelObj).intValue();
                 } else if (delayLevelObj instanceof String) {

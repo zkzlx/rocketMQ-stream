@@ -24,6 +24,8 @@ import org.apache.rocketmq.remoting.netty.TlsSystemConfig;
  */
 public class RocketMQCommonProperties {
 
+	private boolean enabled=true;
+
 	private String nameServer;
 
 	/**
@@ -74,6 +76,14 @@ public class RocketMQCommonProperties {
 
 	private boolean enableMsgTrace = true;
 	private String customizedTraceTopic;
+
+	public boolean getEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
 
 	public String getNameServer() {
 		return nameServer;
@@ -155,7 +165,7 @@ public class RocketMQCommonProperties {
 		this.pullTimeDelayMillsWhenException = pullTimeDelayMillsWhenException;
 	}
 
-	public boolean isVipChannelEnabled() {
+	public boolean getVipChannelEnabled() {
 		return vipChannelEnabled;
 	}
 
@@ -163,7 +173,7 @@ public class RocketMQCommonProperties {
 		this.vipChannelEnabled = vipChannelEnabled;
 	}
 
-	public boolean isUseTLS() {
+	public boolean getUseTLS() {
 		return useTLS;
 	}
 
@@ -171,7 +181,7 @@ public class RocketMQCommonProperties {
 		this.useTLS = useTLS;
 	}
 
-	public boolean isEnableMsgTrace() {
+	public boolean getEnableMsgTrace() {
 		return enableMsgTrace;
 	}
 

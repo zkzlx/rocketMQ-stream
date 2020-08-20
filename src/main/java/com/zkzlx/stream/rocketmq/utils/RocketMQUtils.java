@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.acl.common.SessionCredentials;
+import org.apache.rocketmq.client.consumer.MessageSelector;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.MQProducer;
 import org.apache.rocketmq.client.producer.TransactionMQProducer;
@@ -33,6 +34,8 @@ import com.zkzlx.stream.rocketmq.properties.RocketMQBinderConfigurationPropertie
 import com.zkzlx.stream.rocketmq.properties.RocketMQExtendedBindingProperties;
 import com.zkzlx.stream.rocketmq.properties.RocketMQProducerProperties;
 import com.zkzlx.stream.rocketmq.properties.RocketMQProducerProperties.ProducerType;
+
+import javafx.util.Pair;
 
 /**
  * TODO Describe what it does
@@ -98,5 +101,14 @@ public class RocketMQUtils {
 		}
 		return String.join(";", nameServerList);
 	}
+
+	public static MessageSelector getMessageSelector(String expression){
+		if(StringUtils.hasText(expression) && !expression.contains("||")){
+			return MessageSelector.bySql(expression);
+		}
+		return MessageSelector.byTag(expression);
+	}
+
+
 
 }
