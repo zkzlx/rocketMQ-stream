@@ -1,32 +1,14 @@
-/*
- * Copyright (C) 2018 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package com.zkzlx.stream.rocketmq.support;
+package com.zkzlx.stream.rocketmq.producing;
 
 import java.lang.reflect.Field;
 
 import com.zkzlx.stream.rocketmq.properties.RocketMQBinderConfigurationProperties;
-import com.zkzlx.stream.rocketmq.properties.RocketMQConsumerProperties;
 import com.zkzlx.stream.rocketmq.properties.RocketMQProducerProperties;
 import com.zkzlx.stream.rocketmq.properties.RocketMQProducerProperties.ProducerType;
 import com.zkzlx.stream.rocketmq.utils.RocketMQUtils;
 
 import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.acl.common.SessionCredentials;
-import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.TransactionMQProducer;
 import org.apache.rocketmq.client.trace.AsyncTraceDispatcher;
@@ -43,11 +25,13 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Extended function related to producer and consumer. eg:initial
+ * TODO Describe what it does
+ *
  * @author zkzlx
  */
-public class RocketMQProducerConsumerSupport {
-    private final static Logger log = LoggerFactory.getLogger(RocketMQProducerConsumerSupport.class);
+public class RocketMQProduceProcessor {
+
+    private final static Logger log = LoggerFactory.getLogger(RocketMQProduceProcessor.class);
 
 
     /**
@@ -58,9 +42,9 @@ public class RocketMQProducerConsumerSupport {
      * @return
      */
     public static DefaultMQProducer initRocketMQProducer(ProducerDestination producerDestination
-                                                  ,RocketMQBinderConfigurationProperties binderConfigurationProperties
+            , RocketMQBinderConfigurationProperties binderConfigurationProperties
             , ExtendedProducerProperties<RocketMQProducerProperties> extendedProperties){
-        RocketMQProducerProperties producerProperties =RocketMQUtils.mergeRocketMQProducerProperties(
+        RocketMQProducerProperties producerProperties = RocketMQUtils.mergeRocketMQProducerProperties(
                 binderConfigurationProperties,extendedProperties.getExtension());
         Assert.notNull(producerProperties.getGroup(), "Property 'consumerGroup' is required");
         Assert.notNull(producerProperties.getNameServer(), "Property 'nameServer' is required");
@@ -105,21 +89,6 @@ public class RocketMQProducerConsumerSupport {
         producer.setRetryAnotherBrokerWhenNotStoreOK(producerProperties.getRetryAnotherBroker());
         producer.setMaxMessageSize(producerProperties.getMaxMessageSize());
         return producer;
-    }
-
-
-    /**
-     *
-     * @param destination
-     * @param binderConfigurationProperties
-     * @param extendedProperties
-     * @return
-     */
-    public static DefaultMQPushConsumer initRocketMQPushConsumer(ProducerDestination destination
-            ,RocketMQBinderConfigurationProperties binderConfigurationProperties
-            , ExtendedProducerProperties<RocketMQConsumerProperties> extendedProperties){
-        DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
-        return defaultMQPushConsumer;
     }
 
 

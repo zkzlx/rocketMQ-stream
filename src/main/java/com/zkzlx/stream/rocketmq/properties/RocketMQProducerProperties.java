@@ -108,7 +108,7 @@ public class RocketMQProducerProperties extends RocketMQCommonProperties {
 		this.retryTimesWhenSendAsyncFailed = retryTimesWhenSendAsyncFailed;
 	}
 
-	public boolean isRetryAnotherBroker() {
+	public boolean getRetryAnotherBroker() {
 		return retryAnotherBroker;
 	}
 

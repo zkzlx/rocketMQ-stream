@@ -22,7 +22,19 @@ import org.apache.rocketmq.common.message.MessageConst;
  * @author zkzlx
  */
 public class RocketMQConst extends MessageConst {
-	public static final String PROPERTY_SELECTOR_ARGS = "SELECTOR_ARGS";
-	public static final String PROPERTY_TRANSACTIONAL_ARGS = "TRANSACTIONAL_ARGS";
+	public static final String USER_SELECTOR_ARGS = "SELECTOR_ARGS";
+	public static final String USER_TRANSACTIONAL_ARGS = "TRANSACTIONAL_ARGS";
+
+	public static final String USER_PREFIX = "rocketmq_";
+	public static final String USER_KEYS = MessageConst.PROPERTY_KEYS;
+	public static final String USER_TAGS = MessageConst.PROPERTY_TAGS;
+	public static final String USER_TOPIC = "TOPIC";
+	public static final String USER_MESSAGE_ID = "MESSAGE_ID";
+	public static final String USER_BORN_TIMESTAMP = "BORN_TIMESTAMP";
+	public static final String USER_BORN_HOST = "BORN_HOST";
+	public static final String USER_FLAG = "FLAG";
+	public static final String USER_QUEUE_ID = "QUEUE_ID";
+	public static final String USER_SYS_FLAG = "SYS_FLAG";
+	public static final String USER_TRANSACTION_ID = "TRANSACTION_ID";
 
 }

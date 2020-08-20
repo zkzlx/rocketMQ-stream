@@ -16,7 +16,7 @@
 
 package com.zkzlx.stream.rocketmq;
 
-import com.zkzlx.stream.rocketmq.handler.RocketMQMessageHandler;
+import com.zkzlx.stream.rocketmq.integration.outbound.RocketMQProducerMessageHandler;
 import com.zkzlx.stream.rocketmq.integration.RocketMQMessageSource;
 import com.zkzlx.stream.rocketmq.properties.RocketMQBinderConfigurationProperties;
 import com.zkzlx.stream.rocketmq.properties.RocketMQConsumerProperties;
@@ -34,13 +34,10 @@ import org.springframework.cloud.stream.config.ListenerContainerCustomizer;
 import org.springframework.cloud.stream.config.MessageSourceCustomizer;
 import org.springframework.cloud.stream.provisioning.ConsumerDestination;
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.Lifecycle;
-import org.springframework.integration.amqp.inbound.AmqpMessageSource;
 import org.springframework.integration.core.MessageProducer;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
-import org.springframework.util.Assert;
 
 /**
  * A {@link org.springframework.cloud.stream.binder.Binder} that uses RocketMQ as the
@@ -96,11 +93,11 @@ public class RocketMQMessageChannelBinder extends
 	protected MessageHandler createProducerMessageHandler(ProducerDestination destination
 			, ExtendedProducerProperties<RocketMQProducerProperties> producerProperties
 			, MessageChannel channel, MessageChannel errorChannel) throws Exception {
-//		if (!producerProperties.getExtension().getEnable()) {
-//			throw new RuntimeException("Binding for channel " + destination.getName()
-//					+ " has been disabled, message can't be delivered");
-//		}
-		RocketMQMessageHandler messageHandler = new RocketMQMessageHandler(binderConfigurationProperties,producerProperties,destination);
+		if (!producerProperties.getExtension().getEnabled()) {
+			throw new RuntimeException("Binding for channel " + destination.getName()
+					+ " has been disabled, message can't be delivered");
+		}
+		RocketMQProducerMessageHandler messageHandler = new RocketMQProducerMessageHandler(binderConfigurationProperties,producerProperties,destination);
 		messageHandler.setApplicationContext(this.getApplicationContext());
 		if (errorChannel != null) {
 			messageHandler.setSendFailureChannel(errorChannel);

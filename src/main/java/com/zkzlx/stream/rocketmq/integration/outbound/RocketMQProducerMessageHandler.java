@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.zkzlx.stream.rocketmq.handler;
+package com.zkzlx.stream.rocketmq.integration.outbound;
 
 import com.zkzlx.stream.rocketmq.contants.RocketMQConst;
 import com.zkzlx.stream.rocketmq.properties.RocketMQBinderConfigurationProperties;
@@ -48,12 +48,12 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessagingException;
 
 /**
- * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
+ * @author zkzlx
  */
-public class RocketMQMessageHandler extends AbstractMessageHandler implements  Lifecycle {
+public class RocketMQProducerMessageHandler extends AbstractMessageHandler implements  Lifecycle {
 
 	private final static Logger log = LoggerFactory
-			.getLogger(RocketMQMessageHandler.class);
+			.getLogger(RocketMQProducerMessageHandler.class);
 
 	private final RocketMQMessageConverterSupport messageConverterSupport = RocketMQMessageConverterSupport
 			.instance();
@@ -70,7 +70,7 @@ public class RocketMQMessageHandler extends AbstractMessageHandler implements  L
 	private final ExtendedProducerProperties<RocketMQProducerProperties> extendedProducerProperties;
 	private final DefaultMQProducer defaultMQProducer;
 
-	public RocketMQMessageHandler(
+	public RocketMQProducerMessageHandler(
 			RocketMQBinderConfigurationProperties binderConfigurationProperties,
 			ExtendedProducerProperties<RocketMQProducerProperties> extendedProducerProperties,
 			ProducerDestination producerDestination) {
@@ -108,10 +108,10 @@ public class RocketMQMessageHandler extends AbstractMessageHandler implements  L
 			SendResult sendResult;
 			if (defaultMQProducer instanceof TransactionMQProducer) {
 				sendResult = defaultMQProducer.sendMessageInTransaction(
-						messageConverterSupport.convertMQMessage(producerDestination.getName(),
+						messageConverterSupport.convertMessage2MQ(producerDestination.getName(),
 								message),
 						message.getHeaders()
-								.get(RocketMQConst.PROPERTY_TRANSACTIONAL_ARGS));
+								.get(RocketMQConst.USER_TRANSACTIONAL_ARGS));
 			}
 			else {
 				Object selectorArg = null;
@@ -161,7 +161,7 @@ public class RocketMQMessageHandler extends AbstractMessageHandler implements  L
 			Object args) throws RemotingException, MQClientException,
 			InterruptedException, MQBrokerException {
 		org.apache.rocketmq.common.message.Message mqMessage = messageConverterSupport
-				.convertMQMessage(producerDestination.getName(), message);
+				.convertMessage2MQ(producerDestination.getName(), message);
 		if (SendType.OneWay.equalsName(extendedProducerProperties.getExtension().getSendType())) {
 			if (null != selector) {
 				defaultMQProducer.sendOneway(mqMessage, selector, args);
