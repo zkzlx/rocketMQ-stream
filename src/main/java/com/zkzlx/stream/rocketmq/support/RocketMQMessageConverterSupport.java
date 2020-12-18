@@ -191,14 +191,12 @@ public class RocketMQMessageConverterSupport {
             int flag = 0;
             int delayLevel = 0;
             try {
-                Object delayLevelObj = headers.get(RocketMQConst.USER_SELECTOR_ARGS);
-                if (delayLevelObj instanceof Number) {
-                    delayLevel = ((Number) delayLevelObj).intValue();
-                } else if (delayLevelObj instanceof String) {
-                    delayLevel = Integer.parseInt((String) delayLevelObj);
-                }
+                Object delayLevelObj = headers
+                        .getOrDefault(MessageConst.PROPERTY_DELAY_TIME_LEVEL, 0);
+                delayLevel = Integer.parseInt(String.valueOf(delayLevelObj));
                 flag = Integer.parseInt(flagObj.toString());
-            } catch (NumberFormatException ignored) {
+            }
+            catch (Exception ignored) {
             }
             if (delayLevel > 0) {
                 rocketMsg.setDelayTimeLevel(delayLevel);

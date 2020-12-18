@@ -22,7 +22,7 @@ import org.apache.rocketmq.remoting.netty.TlsSystemConfig;
 /**
  * @author zkzlx
  */
-public class RocketMQCommonProperties {
+public class RocketMQCommonProperties{
 
 	private boolean enabled=true;
 

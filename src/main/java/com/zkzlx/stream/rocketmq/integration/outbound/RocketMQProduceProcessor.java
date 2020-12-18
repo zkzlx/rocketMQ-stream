@@ -1,8 +1,5 @@
-package com.zkzlx.stream.rocketmq.producing;
+package com.zkzlx.stream.rocketmq.integration.outbound;
 
-import java.lang.reflect.Field;
-
-import com.zkzlx.stream.rocketmq.properties.RocketMQBinderConfigurationProperties;
 import com.zkzlx.stream.rocketmq.properties.RocketMQProducerProperties;
 import com.zkzlx.stream.rocketmq.properties.RocketMQProducerProperties.ProducerType;
 import com.zkzlx.stream.rocketmq.utils.RocketMQUtils;
@@ -11,42 +8,35 @@ import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.TransactionMQProducer;
-import org.apache.rocketmq.client.trace.AsyncTraceDispatcher;
-import org.apache.rocketmq.client.trace.TraceDispatcher;
-import org.apache.rocketmq.client.trace.hook.SendMessageTraceHookImpl;
+import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.remoting.RPCHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
-import org.springframework.cloud.stream.provisioning.ProducerDestination;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * TODO Describe what it does
+ * Extended function related to producer . eg:initial
  *
  * @author zkzlx
  */
-public class RocketMQProduceProcessor {
+public final class RocketMQProduceProcessor {
 
     private final static Logger log = LoggerFactory.getLogger(RocketMQProduceProcessor.class);
 
 
     /**
      *  init for the producer,including convert producer params.
-     * @param producerDestination
-     * @param binderConfigurationProperties
-     * @param extendedProperties
      * @return
      */
-    public static DefaultMQProducer initRocketMQProducer(ProducerDestination producerDestination
-            , RocketMQBinderConfigurationProperties binderConfigurationProperties
-            , ExtendedProducerProperties<RocketMQProducerProperties> extendedProperties){
-        RocketMQProducerProperties producerProperties = RocketMQUtils.mergeRocketMQProducerProperties(
-                binderConfigurationProperties,extendedProperties.getExtension());
-        Assert.notNull(producerProperties.getGroup(), "Property 'consumerGroup' is required");
+    public static DefaultMQProducer initRocketMQProducer(String topic
+            , RocketMQProducerProperties producerProperties){
+
+        if(StringUtils.isEmpty(producerProperties.getGroup())){
+            producerProperties.setGroup(MixAll.DEFAULT_PRODUCER_GROUP);
+        }
         Assert.notNull(producerProperties.getNameServer(), "Property 'nameServer' is required");
 
         RPCHook rpcHook=null;
@@ -60,27 +50,27 @@ public class RocketMQProduceProcessor {
         if(ProducerType.Trans.equalsName(producerProperties.getProducerType())){
             producer = new TransactionMQProducer(producerProperties.getNamespace()
                     ,producerProperties.getGroup(),rpcHook);
-            if (producerProperties.getEnableMsgTrace()) {
-                try {
-                    AsyncTraceDispatcher dispatcher = new AsyncTraceDispatcher(
-                            producerProperties.getGroup(), TraceDispatcher.Type.PRODUCE, producerProperties.getCustomizedTraceTopic(), rpcHook);
-                    dispatcher.setHostProducer(producer.getDefaultMQProducerImpl());
-                    Field field = DefaultMQProducer.class.getDeclaredField("traceDispatcher");
-                    field.setAccessible(true);
-                    field.set(producer, dispatcher);
-                    producer.getDefaultMQProducerImpl().registerSendMessageHook(
-                            new SendMessageTraceHookImpl(dispatcher));
-                } catch (Throwable e) {
-                    log.error("system mqtrace hook init failed ,maybe can't send msg trace data");
-                }
-            }
+//            if (producerProperties.getEnableMsgTrace()) {
+//                try {
+//                    AsyncTraceDispatcher dispatcher = new AsyncTraceDispatcher(
+//                            producerProperties.getGroup(), TraceDispatcher.Type.PRODUCE, producerProperties.getCustomizedTraceTopic(), rpcHook);
+//                    dispatcher.setHostProducer(producer.getDefaultMQProducerImpl());
+//                    Field field = DefaultMQProducer.class.getDeclaredField("traceDispatcher");
+//                    field.setAccessible(true);
+//                    field.set(producer, dispatcher);
+//                    producer.getDefaultMQProducerImpl().registerSendMessageHook(
+//                            new SendMessageTraceHookImpl(dispatcher));
+//                } catch (Throwable e) {
+//                    log.error("system mqtrace hook init failed ,maybe can't send msg trace data");
+//                }
+//            }
         }else{
             producer = new DefaultMQProducer(producerProperties.getNamespace()
                     ,producerProperties.getGroup(),rpcHook,producerProperties.getEnableMsgTrace(),producerProperties.getCustomizedTraceTopic());
         }
 
         producer.setVipChannelEnabled(producerProperties.getVipChannelEnabled());
-        producer.setInstanceName(RocketMQUtils.getInstanceName(rpcHook,producerDestination.getName() + "|" + UtilAll.getPid()));
+        producer.setInstanceName(RocketMQUtils.getInstanceName(rpcHook,topic + "|" + UtilAll.getPid()));
         producer.setNamesrvAddr(producerProperties.getNameServer());
         producer.setSendMsgTimeout(producerProperties.getSendMsgTimeout());
         producer.setRetryTimesWhenSendFailed(producerProperties.getRetryTimesWhenSendFailed());

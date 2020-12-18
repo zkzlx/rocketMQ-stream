@@ -18,7 +18,7 @@ package com.zkzlx.stream.rocketmq.integration;
 
 import java.util.List;
 
-import com.zkzlx.stream.rocketmq.properties.RocketMQBinderConfigurationProperties;
+import com.zkzlx.stream.rocketmq.integration.inbound.RocketMQConsumerProcessor;
 import com.zkzlx.stream.rocketmq.properties.RocketMQConsumerProperties;
 import com.zkzlx.stream.rocketmq.support.RocketMQMessageConverterSupport;
 import com.zkzlx.stream.rocketmq.utils.RocketMQUtils;
@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.context.Lifecycle;
 import org.springframework.integration.endpoint.AbstractMessageSource;
 
@@ -44,10 +43,6 @@ public class RocketMQMessageSource extends AbstractMessageSource<Object>
 	private final static Logger log = LoggerFactory
 			.getLogger(RocketMQMessageSource.class);
 
-	private final RocketMQBinderConfigurationProperties binderConfigurationProperties;
-
-	private final ExtendedConsumerProperties<RocketMQConsumerProperties> extendedConsumerProperties;
-
 	private final String topic;
 
 	private final String group;
@@ -58,16 +53,13 @@ public class RocketMQMessageSource extends AbstractMessageSource<Object>
 
 	private MessageSelector messageSelector;
 
-	public RocketMQMessageSource(
-			RocketMQBinderConfigurationProperties binderConfigurationProperties,
-			ExtendedConsumerProperties<RocketMQConsumerProperties> extendedConsumerProperties,
-			String topic, String group) {
-		this.binderConfigurationProperties = binderConfigurationProperties;
-		this.extendedConsumerProperties = extendedConsumerProperties;
-		this.topic = topic;
+
+	public RocketMQMessageSource(String name, String group, RocketMQConsumerProperties consumerProperties) {
+		this.topic = name;
 		this.group = group;
 		this.messageSelector = RocketMQUtils.getMessageSelector(
-				extendedConsumerProperties.getExtension().getSubscription());
+				consumerProperties.getSubscription());
+		this.consumer = RocketMQConsumerProcessor.initPullConsumer(consumerProperties);
 	}
 
 	@Override
@@ -77,16 +69,6 @@ public class RocketMQMessageSource extends AbstractMessageSource<Object>
 					"pull consumer already running. " + this.toString());
 		}
 		try {
-			consumer = new DefaultLitePullConsumer(group);
-			consumer.setNamesrvAddr(
-					extendedConsumerProperties.getExtension().getNameServer());
-			consumer.setPollTimeoutMillis(extendedConsumerProperties.getExtension()
-					.getPoll().getPollTimeoutMillis());
-			consumer.setConsumerPullTimeoutMillis(extendedConsumerProperties
-					.getExtension().getPoll().getConsumerPullTimeoutMillis());
-			consumer.setMessageModel(
-					extendedConsumerProperties.getExtension().getMessageModel());
-
 			consumer.subscribe(topic, messageSelector);
 
 			consumer.start();

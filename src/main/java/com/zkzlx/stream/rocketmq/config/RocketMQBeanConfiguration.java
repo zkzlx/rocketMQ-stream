@@ -5,6 +5,7 @@ import com.zkzlx.stream.rocketmq.properties.RocketMQConsumerProperties;
 import com.zkzlx.stream.rocketmq.properties.RocketMQProducerProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,8 +13,7 @@ import org.springframework.stereotype.Component;
  *
  * @author junboXiang
  */
-@Component
-@EnableConfigurationProperties(value = {RocketMQProducerProperties.class, RocketMQConsumerProperties.class})
+@Configuration
 public class RocketMQBeanConfiguration {
 
     @Bean

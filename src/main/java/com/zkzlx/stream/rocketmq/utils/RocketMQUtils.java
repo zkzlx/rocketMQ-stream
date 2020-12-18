@@ -18,24 +18,18 @@ package com.zkzlx.stream.rocketmq.utils;
 
 import java.util.List;
 
+import com.zkzlx.stream.rocketmq.properties.RocketMQBinderConfigurationProperties;
+import com.zkzlx.stream.rocketmq.properties.RocketMQCommonProperties;
+
 import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.acl.common.SessionCredentials;
+import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.MessageSelector;
-import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.client.producer.MQProducer;
-import org.apache.rocketmq.client.producer.TransactionMQProducer;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.remoting.RPCHook;
-import org.springframework.util.Assert;
+
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-
-import com.zkzlx.stream.rocketmq.properties.RocketMQBinderConfigurationProperties;
-import com.zkzlx.stream.rocketmq.properties.RocketMQExtendedBindingProperties;
-import com.zkzlx.stream.rocketmq.properties.RocketMQProducerProperties;
-import com.zkzlx.stream.rocketmq.properties.RocketMQProducerProperties.ProducerType;
-
-import javafx.util.Pair;
 
 /**
  * TODO Describe what it does
@@ -44,54 +38,49 @@ import javafx.util.Pair;
  */
 public class RocketMQUtils {
 
-	public static RocketMQProducerProperties mergeRocketMQProducerProperties(
-			RocketMQBinderConfigurationProperties binderConfigurationProperties,
-			RocketMQProducerProperties producerProperties) {
-		if (producerProperties == null && binderConfigurationProperties == null) {
-			return new RocketMQProducerProperties();
-		}
-		if (producerProperties == null) {
-			producerProperties = new RocketMQProducerProperties();
-		}
+	public static <T extends RocketMQCommonProperties> T mergeRocketMQProperties(
+			RocketMQBinderConfigurationProperties binderConfigurationProperties,T mqProperties) {
 		if (null == binderConfigurationProperties) {
-			return producerProperties;
+			return mqProperties;
 		}
-		if (StringUtils.isEmpty(producerProperties.getNameServer())) {
-			producerProperties
+		if (StringUtils.isEmpty(mqProperties.getNameServer())) {
+			mqProperties
 					.setNameServer(binderConfigurationProperties.getNameServer());
 		}
-		if (StringUtils.isEmpty(producerProperties.getSecretKey())) {
-			producerProperties.setSecretKey(binderConfigurationProperties.getSecretKey());
+		if (StringUtils.isEmpty(mqProperties.getSecretKey())) {
+			mqProperties.setSecretKey(binderConfigurationProperties.getSecretKey());
 		}
-		if (StringUtils.isEmpty(producerProperties.getAccessKey())) {
-			producerProperties.setAccessKey(binderConfigurationProperties.getAccessKey());
+		if (StringUtils.isEmpty(mqProperties.getAccessKey())) {
+			mqProperties.setAccessKey(binderConfigurationProperties.getAccessKey());
 		}
-		if (StringUtils.isEmpty(producerProperties.getAccessChannel())) {
-			producerProperties
+		if (StringUtils.isEmpty(mqProperties.getAccessChannel())) {
+			mqProperties
 					.setAccessChannel(binderConfigurationProperties.getAccessChannel());
 		}
-		if (StringUtils.isEmpty(producerProperties.getNamespace())) {
-			producerProperties.setNamespace(binderConfigurationProperties.getNamespace());
+		if (StringUtils.isEmpty(mqProperties.getNamespace())) {
+			mqProperties.setNamespace(binderConfigurationProperties.getNamespace());
 		}
-		if (StringUtils.isEmpty(producerProperties.getGroup())) {
-			producerProperties.setGroup(binderConfigurationProperties.getGroup());
+		if (StringUtils.isEmpty(mqProperties.getGroup())) {
+			mqProperties.setGroup(binderConfigurationProperties.getGroup());
 		}
-		if (StringUtils.isEmpty(producerProperties.getCustomizedTraceTopic())) {
-			producerProperties.setCustomizedTraceTopic(
+		if (StringUtils.isEmpty(mqProperties.getCustomizedTraceTopic())) {
+			mqProperties.setCustomizedTraceTopic(
 					binderConfigurationProperties.getCustomizedTraceTopic());
 		}
-
-		return producerProperties;
+		mqProperties.setNameServer(getNameServerStr(mqProperties.getNameServer()));
+		return mqProperties;
 	}
 
 	public static String getInstanceName(RPCHook rpcHook, String identify) {
 		String separator = "|";
 		StringBuilder instanceName = new StringBuilder();
-		SessionCredentials sessionCredentials = ((AclClientRPCHook) rpcHook)
-				.getSessionCredentials();
-		instanceName.append(sessionCredentials.getAccessKey()).append(separator)
-				.append(sessionCredentials.getSecretKey()).append(separator)
-				.append(identify).append(separator).append(UtilAll.getPid());
+		if (null != rpcHook) {
+			SessionCredentials sessionCredentials = ((AclClientRPCHook) rpcHook)
+					.getSessionCredentials();
+			instanceName.append(sessionCredentials.getAccessKey()).append(separator)
+					.append(sessionCredentials.getSecretKey()).append(separator);
+		}
+		instanceName.append(identify).append(separator).append(UtilAll.getPid());
 		return instanceName.toString();
 	}
 
@@ -101,14 +90,19 @@ public class RocketMQUtils {
 		}
 		return String.join(";", nameServerList);
 	}
+	public static String getNameServerStr(String nameServer) {
+		if (StringUtils.isEmpty(nameServer)) {
+			return null;
+		}
+		return nameServer.replaceAll(",",";");
+	}
 
-	public static MessageSelector getMessageSelector(String expression){
-		if(StringUtils.hasText(expression) && !expression.contains("||")){
+
+	public static MessageSelector getMessageSelector(String expression) {
+		if (StringUtils.hasText(expression) && !expression.contains("||")) {
 			return MessageSelector.bySql(expression);
 		}
 		return MessageSelector.byTag(expression);
 	}
-
-
 
 }

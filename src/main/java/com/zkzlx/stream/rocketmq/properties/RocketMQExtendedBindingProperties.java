@@ -40,10 +40,6 @@ public class RocketMQExtendedBindingProperties extends
 		return DEFAULTS_PREFIX;
 	}
 
-	@Override
-	public Map<String, RocketMQSpecificPropertiesProvider> getBindings() {
-		return this.doGetBindings();
-	}
 
 	@Override
 	public Class<? extends BinderSpecificPropertiesProvider> getExtendedPropertiesEntryClass() {

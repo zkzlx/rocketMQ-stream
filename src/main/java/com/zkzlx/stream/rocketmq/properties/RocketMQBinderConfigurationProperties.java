@@ -17,8 +17,10 @@
 package com.zkzlx.stream.rocketmq.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-
-
+/**
+ * binding rocketMq properties.
+ * @author zkzlx
+ */
 @ConfigurationProperties(prefix = "spring.cloud.stream.rocketmq.binder")
 public class RocketMQBinderConfigurationProperties extends RocketMQCommonProperties{
 

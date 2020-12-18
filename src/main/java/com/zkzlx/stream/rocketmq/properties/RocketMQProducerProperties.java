@@ -70,6 +70,8 @@ public class RocketMQProducerProperties extends RocketMQCommonProperties {
 
 	private String sendCallBack;
 
+	private String transactionListener;
+
 	private String messageQueueSelector;
 
 	private String errorMessageStrategy;
@@ -150,6 +152,15 @@ public class RocketMQProducerProperties extends RocketMQCommonProperties {
 
 	public String getMessageQueueSelector() {
 		return messageQueueSelector;
+	}
+
+	public String getTransactionListener() {
+		return transactionListener;
+	}
+
+	public RocketMQProducerProperties setTransactionListener(String transactionListener) {
+		this.transactionListener = transactionListener;
+		return this;
 	}
 
 	public void setMessageQueueSelector(String messageQueueSelector) {
