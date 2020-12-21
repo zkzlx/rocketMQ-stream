@@ -85,7 +85,7 @@ public class RocketMQInboundChannelAdapter extends MessageProducerSupport
 
 		try {
 			pushConsumer = RocketMQConsumerFactory.initPushConsumer(consumerProperties);
-			//prepare register consumer message listener
+			//prepare register consumer message listener,the next step is to be compatible with a custom MessageListener.
 			if (consumerProperties.getPush().getOrderly()) {
 				pushConsumer.registerMessageListener((MessageListenerOrderly) (msgs,
 						context) -> RocketMQInboundChannelAdapter.this

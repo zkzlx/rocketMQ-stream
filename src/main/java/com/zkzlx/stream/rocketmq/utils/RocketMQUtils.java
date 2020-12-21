@@ -97,10 +97,10 @@ public class RocketMQUtils {
 		return nameServer.replaceAll(",",";");
 	}
 
-
+	private static final String sql = "sql:";
 	public static MessageSelector getMessageSelector(String expression) {
-		if (StringUtils.hasText(expression) && !expression.contains("||")) {
-			return MessageSelector.bySql(expression);
+		if (StringUtils.hasText(expression) && expression.startsWith(sql)) {
+			return MessageSelector.bySql(expression.replaceFirst(sql,""));
 		}
 		return MessageSelector.byTag(expression);
 	}

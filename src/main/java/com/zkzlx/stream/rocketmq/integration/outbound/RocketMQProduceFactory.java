@@ -33,7 +33,8 @@ public final class RocketMQProduceFactory {
      */
     public static DefaultMQProducer initRocketMQProducer(String topic
             , RocketMQProducerProperties producerProperties){
-
+        Assert.notNull(producerProperties.getGroup(),
+                "Property 'group' is required - producerGroup");
         Assert.notNull(producerProperties.getNameServer(), "Property 'nameServer' is required");
 
         RPCHook rpcHook=null;

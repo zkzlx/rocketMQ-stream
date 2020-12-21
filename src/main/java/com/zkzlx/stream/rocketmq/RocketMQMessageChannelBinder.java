@@ -111,9 +111,21 @@ public class RocketMQMessageChannelBinder extends
 				.mergeRocketMQProperties(binderConfigurationProperties,
 						extendedConsumerProperties.getExtension());
 		consumerProperties.setGroup(group);
-		RocketMQInboundChannelAdapter rocketMQInboundChannelAdapter = new RocketMQInboundChannelAdapter(
+		RocketMQInboundChannelAdapter inboundChannelAdapter = new RocketMQInboundChannelAdapter(
 				destination.getName(), consumerProperties);
-		return rocketMQInboundChannelAdapter;
+		ErrorInfrastructure errorInfrastructure = registerErrorInfrastructure(destination,
+				group, extendedConsumerProperties);
+		if (extendedConsumerProperties.getMaxAttempts() > 1) {
+			inboundChannelAdapter
+					.setRetryTemplate(buildRetryTemplate(extendedConsumerProperties));
+			inboundChannelAdapter
+					.setRecoveryCallback(errorInfrastructure.getRecoverer());
+		}
+		else {
+			inboundChannelAdapter
+					.setErrorChannel(errorInfrastructure.getErrorChannel());
+		}
+		return inboundChannelAdapter;
 	}
 
 	@Override

@@ -32,7 +32,7 @@ public final class RocketMQConsumerFactory {
 			RocketMQConsumerProperties consumerProperties) {
 
 		Assert.notNull(consumerProperties.getGroup(),
-				"Property 'consumerGroup' is required");
+				"Property 'group' is required - consumerGroup");
 		Assert.notNull(consumerProperties.getNameServer(),
 				"Property 'nameServer' is required");
 		AllocateMessageQueueStrategy allocateMessageQueueStrategy = RocketMQBeanContainerCache
@@ -64,7 +64,7 @@ public final class RocketMQConsumerFactory {
 	public static DefaultLitePullConsumer initPullConsumer(
 			RocketMQConsumerProperties consumerProperties) {
 		Assert.notNull(consumerProperties.getGroup(),
-				"Property 'consumerGroup' is required");
+				"Property 'group' is required - consumerGroup");
 		Assert.notNull(consumerProperties.getNameServer(),
 				"Property 'nameServer' is required");
 		AllocateMessageQueueStrategy allocateMessageQueueStrategy = RocketMQBeanContainerCache

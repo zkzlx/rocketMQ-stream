@@ -17,24 +17,31 @@
 package com.zkzlx.stream;
 
 import com.zkzlx.stream.RocketMQConsumerApplication.MySink;
+import com.zkzlx.stream.test.ReceiveService;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.Input;
+import org.springframework.context.annotation.Bean;
 import org.springframework.messaging.SubscribableChannel;
 
 /**
  * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
-@SpringBootApplication
-@EnableBinding({ MySink.class })
+//@SpringBootApplication
+//@EnableBinding({ MySink.class })
 public class RocketMQConsumerApplication {
 
 
 	public static void main(String[] args) {
         SpringApplication.run(RocketMQConsumerApplication.class);
 	}
+
+	@Bean
+    public ReceiveService receiveService(){
+	    return new ReceiveService();
+    }
 
 //	@Bean
 //	public ConsumerCustomRunner customRunner() {

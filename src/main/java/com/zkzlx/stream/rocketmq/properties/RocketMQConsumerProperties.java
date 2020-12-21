@@ -66,7 +66,6 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 	 */
 	private String subscription ;
 
-
 	private Push push=new Push();
 
 	public String getMessageModel() {

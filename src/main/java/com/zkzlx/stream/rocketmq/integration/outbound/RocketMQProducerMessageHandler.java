@@ -141,6 +141,7 @@ public class RocketMQProducerMessageHandler extends AbstractMessageHandler
 				}
 				((TransactionMQProducer) defaultMQProducer)
 						.setTransactionListener(transactionListener);
+				log.info("send transaction message :"+message);
 				sendResult = defaultMQProducer.sendMessageInTransaction(
 						messageConverterSupport.convertMessage2MQ(destination.getName(),
 								message),
@@ -184,6 +185,7 @@ public class RocketMQProducerMessageHandler extends AbstractMessageHandler
 				.convertMessage2MQ(destination.getName(), message);
 		SendResult sendResult = new SendResult();
 		sendResult.setSendStatus(SendStatus.SEND_OK);
+		log.info("send message :"+mqMessage);
 		if (SendType.OneWay
 				.equalsName(extendedProducerProperties.getExtension().getSendType())) {
 			if (null != selector) {
