@@ -27,13 +27,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.stereotype.Service;
 import org.springframework.util.MimeTypeUtils;
 
 /**
  * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
-@Service
 public class SenderService {
 
 	@Autowired

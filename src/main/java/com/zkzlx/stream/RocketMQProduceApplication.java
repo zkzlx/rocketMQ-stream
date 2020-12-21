@@ -39,8 +39,8 @@ import org.springframework.messaging.support.MessageBuilder;
 /**
  * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
-@SpringBootApplication
-@EnableBinding({ MySource.class })
+//@SpringBootApplication
+//@EnableBinding({ MySource.class })
 public class RocketMQProduceApplication {
 
 	public static void main(String[] args) throws IOException {
@@ -55,6 +55,10 @@ public class RocketMQProduceApplication {
 	@Bean
 	public CustomRunner customRunner2() {
 		return new CustomRunner("output3");
+	}
+	@Bean
+	public SenderService senderService(){
+		return new SenderService();
 	}
 
 //	@Bean

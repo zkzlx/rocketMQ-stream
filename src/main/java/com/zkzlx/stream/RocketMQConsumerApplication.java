@@ -16,13 +16,8 @@
 
 package com.zkzlx.stream;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.Properties;
-
 import com.zkzlx.stream.RocketMQConsumerApplication.MySink;
 
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.stream.annotation.EnableBinding;
@@ -32,18 +27,13 @@ import org.springframework.messaging.SubscribableChannel;
 /**
  * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
-//@SpringBootApplication
-//@EnableBinding({ MySink.class })
+@SpringBootApplication
+@EnableBinding({ MySink.class })
 public class RocketMQConsumerApplication {
 
-	public static void main(String[] args) throws IOException {
 
-        Properties prop = new Properties();
-        URL url = ApplicationRunner.class.getClassLoader().getResource("application-consumer.properties");
-        prop.load(url.openStream());
-        SpringApplication app = new SpringApplication(ApplicationRunner.class);
-        app.setDefaultProperties(prop);
-        app.run(args);
+	public static void main(String[] args) {
+        SpringApplication.run(RocketMQConsumerApplication.class);
 	}
 
 //	@Bean
