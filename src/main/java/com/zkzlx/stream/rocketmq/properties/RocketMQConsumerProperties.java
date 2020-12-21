@@ -17,6 +17,9 @@
 package com.zkzlx.stream.rocketmq.properties;
 
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
+import org.apache.rocketmq.client.consumer.listener.ConsumeOrderlyContext;
+import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
+import org.apache.rocketmq.client.consumer.listener.MessageListenerOrderly;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 
 /**
@@ -43,10 +46,15 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 
 	/**
 	 * for concurrently listener. message consume retry strategy. see
-	 * {@link ConsumeConcurrentlyContext#delayLevelWhenNextConsume}. -1 means dlq(or
+	 * {@link ConsumeConcurrentlyContext#getDelayLevelWhenNextConsume()}. -1 means dlq(or
 	 * discard, see {@link this#shouldRequeue}), others means requeue.
 	 */
 	private int delayLevelWhenNextConsume = 0;
+
+	/**
+	 * see{@link ConsumeOrderlyContext#getSuspendCurrentQueueTimeMillis()}
+	 */
+	private int suspendCurrentQueueTimeMillis=1000;
 
 	/**
 	 * The expressions include tags or SQL,as follow:
@@ -96,6 +104,15 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 		return this;
 	}
 
+	public int getSuspendCurrentQueueTimeMillis() {
+		return suspendCurrentQueueTimeMillis;
+	}
+
+	public RocketMQConsumerProperties setSuspendCurrentQueueTimeMillis(int suspendCurrentQueueTimeMillis) {
+		this.suspendCurrentQueueTimeMillis = suspendCurrentQueueTimeMillis;
+		return this;
+	}
+
 	public Push getPush() {
 		return push;
 	}
@@ -112,18 +129,19 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 	public static class Push{
 
 		/**
-		 * Message listener
+		 * if orderly is true, using {@link MessageListenerOrderly} else if orderly if false,
+		 * using {@link MessageListenerConcurrently}.
 		 */
-		private String messageListener;
+		private boolean orderly=false;
 
-		public String getMessageListener() {
-			return messageListener;
+		public boolean getOrderly() {
+			return orderly;
 		}
 
-		public void setMessageListener(String messageListener) {
-			this.messageListener = messageListener;
+		public Push setOrderly(boolean orderly) {
+			this.orderly = orderly;
+			return this;
 		}
-
 	}
 
 

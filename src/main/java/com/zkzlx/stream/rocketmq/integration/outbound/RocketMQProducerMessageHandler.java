@@ -22,7 +22,6 @@ import com.zkzlx.stream.rocketmq.contants.RocketMQConst;
 import com.zkzlx.stream.rocketmq.custom.RocketMQBeanContainerCache;
 import com.zkzlx.stream.rocketmq.properties.RocketMQProducerProperties;
 import com.zkzlx.stream.rocketmq.properties.RocketMQProducerProperties.SendType;
-import com.zkzlx.stream.rocketmq.provisioning.selector.PartitionMessageQueueSelector;
 import com.zkzlx.stream.rocketmq.support.RocketMQMessageConverterSupport;
 
 import org.apache.rocketmq.client.exception.MQBrokerException;
@@ -40,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
-import org.springframework.cloud.stream.binder.ProducerProperties;
 import org.springframework.cloud.stream.binding.MessageConverterConfigurer;
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
 import org.springframework.context.Lifecycle;
@@ -79,7 +77,7 @@ public class RocketMQProducerMessageHandler extends AbstractMessageHandler
 			RocketMQProducerProperties mqProducerProperties) {
 		this.destination = destination;
 		this.extendedProducerProperties = extendedProducerProperties;
-		this.defaultMQProducer = RocketMQProduceProcessor
+		this.defaultMQProducer = RocketMQProduceFactory
 				.initRocketMQProducer(destination.getName(), mqProducerProperties);
 		this.mqProducerProperties = mqProducerProperties;
 	}

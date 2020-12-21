@@ -18,7 +18,7 @@ package com.zkzlx.stream.rocketmq.integration;
 
 import java.util.List;
 
-import com.zkzlx.stream.rocketmq.integration.inbound.RocketMQConsumerProcessor;
+import com.zkzlx.stream.rocketmq.integration.inbound.RocketMQConsumerFactory;
 import com.zkzlx.stream.rocketmq.properties.RocketMQConsumerProperties;
 import com.zkzlx.stream.rocketmq.support.RocketMQMessageConverterSupport;
 import com.zkzlx.stream.rocketmq.utils.RocketMQUtils;
@@ -59,7 +59,7 @@ public class RocketMQMessageSource extends AbstractMessageSource<Object>
 		this.group = group;
 		this.messageSelector = RocketMQUtils.getMessageSelector(
 				consumerProperties.getSubscription());
-		this.consumer = RocketMQConsumerProcessor.initPullConsumer(consumerProperties);
+		this.consumer = RocketMQConsumerFactory.initPullConsumer(consumerProperties);
 	}
 
 	@Override

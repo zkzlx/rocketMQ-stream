@@ -85,30 +85,30 @@ public class RocketMQMessageConverterSupport {
     }
 
 
-	public List<Message> convertMessage2Spring(List<MessageExt> messageExtList) {
-		List<Message> list = messageExtList.stream().map(message -> {
-			MessageBuilder messageBuilder = MessageBuilder.withPayload(message.getBody())
-					.setHeader(toRocketHeaderKey(RocketMQConst.USER_KEYS), message.getKeys())
-					.setHeader(toRocketHeaderKey(RocketMQConst.USER_KEYS), message.getTags())
-					.setHeader(toRocketHeaderKey(RocketMQConst.USER_TOPIC), message.getTopic())
-					.setHeader(toRocketHeaderKey(RocketMQConst.USER_MESSAGE_ID),
-							message.getMsgId())
-					.setHeader(toRocketHeaderKey(RocketMQConst.USER_BORN_TIMESTAMP),
-							message.getBornTimestamp())
-					.setHeader(toRocketHeaderKey(RocketMQConst.USER_BORN_HOST),
-							message.getBornHostString())
-					.setHeader(toRocketHeaderKey(RocketMQConst.USER_FLAG), message.getFlag())
-					.setHeader(toRocketHeaderKey(RocketMQConst.USER_QUEUE_ID),
-							message.getQueueId())
-					.setHeader(toRocketHeaderKey(RocketMQConst.USER_SYS_FLAG),
-							message.getSysFlag())
-					.setHeader(toRocketHeaderKey(RocketMQConst.USER_TRANSACTION_ID),
-							message.getTransactionId());
-			addUserProperties(message.getProperties(), messageBuilder);
-			return messageBuilder.build();
-		}).collect(Collectors.toList());
-		return list;
-	}
+    public List<Message> convertMessage2Spring(List<MessageExt> messageExtList) {
+        return messageExtList.stream().map(this::convertMessage2Spring).collect(Collectors.toList());
+    }
+    public Message convertMessage2Spring(MessageExt message) {
+        MessageBuilder messageBuilder = MessageBuilder.withPayload(message.getBody())
+                .setHeader(toRocketHeaderKey(RocketMQConst.USER_KEYS), message.getKeys())
+                .setHeader(toRocketHeaderKey(RocketMQConst.USER_KEYS), message.getTags())
+                .setHeader(toRocketHeaderKey(RocketMQConst.USER_TOPIC), message.getTopic())
+                .setHeader(toRocketHeaderKey(RocketMQConst.USER_MESSAGE_ID),
+                        message.getMsgId())
+                .setHeader(toRocketHeaderKey(RocketMQConst.USER_BORN_TIMESTAMP),
+                        message.getBornTimestamp())
+                .setHeader(toRocketHeaderKey(RocketMQConst.USER_BORN_HOST),
+                        message.getBornHostString())
+                .setHeader(toRocketHeaderKey(RocketMQConst.USER_FLAG), message.getFlag())
+                .setHeader(toRocketHeaderKey(RocketMQConst.USER_QUEUE_ID),
+                        message.getQueueId())
+                .setHeader(toRocketHeaderKey(RocketMQConst.USER_SYS_FLAG),
+                        message.getSysFlag())
+                .setHeader(toRocketHeaderKey(RocketMQConst.USER_TRANSACTION_ID),
+                        message.getTransactionId());
+        addUserProperties(message.getProperties(), messageBuilder);
+        return messageBuilder.build();
+    }
 
     public static String toRocketHeaderKey(String rawKey) {
         return "rocketmq-" + rawKey;

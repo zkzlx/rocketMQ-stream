@@ -22,9 +22,9 @@ import org.springframework.util.StringUtils;
  *
  * @author zkzlx
  */
-public final class RocketMQProduceProcessor {
+public final class RocketMQProduceFactory {
 
-    private final static Logger log = LoggerFactory.getLogger(RocketMQProduceProcessor.class);
+    private final static Logger log = LoggerFactory.getLogger(RocketMQProduceFactory.class);
 
 
     /**
