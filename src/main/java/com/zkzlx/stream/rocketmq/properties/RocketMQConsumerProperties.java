@@ -16,10 +16,15 @@
 
 package com.zkzlx.stream.rocketmq.properties;
 
+import java.io.Serializable;
+
+import org.apache.rocketmq.client.consumer.MessageQueueListener;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeOrderlyContext;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerOrderly;
+import org.apache.rocketmq.common.UtilAll;
+import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 
 /**
@@ -45,18 +50,6 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 	private String allocateMessageQueueStrategy;
 
 	/**
-	 * for concurrently listener. message consume retry strategy. see
-	 * {@link ConsumeConcurrentlyContext#getDelayLevelWhenNextConsume()}. -1 means dlq(or
-	 * discard, see {@link this#shouldRequeue}), others means requeue.
-	 */
-	private int delayLevelWhenNextConsume = 0;
-
-	/**
-	 * see{@link ConsumeOrderlyContext#getSuspendCurrentQueueTimeMillis()}
-	 */
-	private int suspendCurrentQueueTimeMillis=1000;
-
-	/**
 	 * The expressions include tags or SQL,as follow:
 	 * <p/>
 	 * tag: {@code tag1||tag2||tag3 }; sql: {@code 'color'='blue' AND 'price'>100 } .
@@ -66,7 +59,75 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 	 */
 	private String subscription ;
 
+	/**
+	 * Delay some time when exception occur
+	 */
+	private long pullTimeDelayMillsWhenException = 1000;
+
+	/**
+	 * Consuming point on consumer booting.
+	 * </p>
+	 *
+	 * There are three consuming points:
+	 * <ul>
+	 * <li>
+	 * <code>CONSUME_FROM_LAST_OFFSET</code>: consumer clients pick up where it stopped previously.
+	 * If it were a newly booting up consumer client, according aging of the consumer group, there are two
+	 * cases:
+	 * <ol>
+	 * <li>
+	 * if the consumer group is created so recently that the earliest message being subscribed has yet
+	 * expired, which means the consumer group represents a lately launched business, consuming will
+	 * start from the very beginning;
+	 * </li>
+	 * <li>
+	 * if the earliest message being subscribed has expired, consuming will start from the latest
+	 * messages, meaning messages born prior to the booting timestamp would be ignored.
+	 * </li>
+	 * </ol>
+	 * </li>
+	 * <li>
+	 * <code>CONSUME_FROM_FIRST_OFFSET</code>: Consumer client will start from earliest messages available.
+	 * </li>
+	 * <li>
+	 * <code>CONSUME_FROM_TIMESTAMP</code>: Consumer client will start from specified timestamp, which means
+	 * messages born prior to {@link #consumeTimestamp} will be ignored
+	 * </li>
+	 * </ul>
+	 */
+	private ConsumeFromWhere consumeFromWhere = ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET;
+	/**
+	 * Backtracking consumption time with second precision. Time format is 20131223171201<br> Implying Seventeen twelve
+	 * and 01 seconds on December 23, 2013 year<br> Default backtracking consumption time Half an hour ago.
+	 */
+	private String consumeTimestamp = UtilAll.timeMillisToHumanString3(System.currentTimeMillis() - (1000 * 60 * 30));
+
+	/**
+	 * Flow control threshold on queue level, each message queue will cache at most 1000 messages by default, Consider
+	 * the {@link #pullBatchSize}, the instantaneous value may exceed the limit
+	 */
+	private int pullThresholdForQueue = 1000;
+	/**
+	 * Limit the cached message size on queue level, each message queue will cache at most 100 MiB messages by default,
+	 * Consider the {@link #pullBatchSize}, the instantaneous value may exceed the limit
+	 *
+	 * <p>
+	 * The size of a message only measured by message body, so it's not accurate
+	 */
+	private int pullThresholdSizeForQueue = 100;
+
+	/**
+	 * Maximum number of messages pulled each time.
+	 */
+	private int pullBatchSize = 10;
+
+	/**
+	 * Consume max span offset.it has no effect on sequential consumption.
+	 */
+	private int consumeMaxSpan = 2000;
+
 	private Push push=new Push();
+	private Pull pull=new Pull();
 
 	public String getMessageModel() {
 		return messageModel;
@@ -94,24 +155,6 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 		this.subscription = subscription;
 	}
 
-	public int getDelayLevelWhenNextConsume() {
-		return delayLevelWhenNextConsume;
-	}
-
-	public RocketMQConsumerProperties setDelayLevelWhenNextConsume(int delayLevelWhenNextConsume) {
-		this.delayLevelWhenNextConsume = delayLevelWhenNextConsume;
-		return this;
-	}
-
-	public int getSuspendCurrentQueueTimeMillis() {
-		return suspendCurrentQueueTimeMillis;
-	}
-
-	public RocketMQConsumerProperties setSuspendCurrentQueueTimeMillis(int suspendCurrentQueueTimeMillis) {
-		this.suspendCurrentQueueTimeMillis = suspendCurrentQueueTimeMillis;
-		return this;
-	}
-
 	public Push getPush() {
 		return push;
 	}
@@ -121,17 +164,134 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 	}
 
 
-	public boolean shouldRequeue() {
-		return delayLevelWhenNextConsume != -1;
+	public long getPullTimeDelayMillsWhenException() {
+		return pullTimeDelayMillsWhenException;
 	}
 
-	public static class Push{
+	public RocketMQConsumerProperties setPullTimeDelayMillsWhenException(long pullTimeDelayMillsWhenException) {
+		this.pullTimeDelayMillsWhenException = pullTimeDelayMillsWhenException;
+		return this;
+	}
+
+	public ConsumeFromWhere getConsumeFromWhere() {
+		return consumeFromWhere;
+	}
+
+	public RocketMQConsumerProperties setConsumeFromWhere(ConsumeFromWhere consumeFromWhere) {
+		this.consumeFromWhere = consumeFromWhere;
+		return this;
+	}
+
+	public String getConsumeTimestamp() {
+		return consumeTimestamp;
+	}
+
+	public RocketMQConsumerProperties setConsumeTimestamp(String consumeTimestamp) {
+		this.consumeTimestamp = consumeTimestamp;
+		return this;
+	}
+
+	public int getPullThresholdForQueue() {
+		return pullThresholdForQueue;
+	}
+
+	public RocketMQConsumerProperties setPullThresholdForQueue(int pullThresholdForQueue) {
+		this.pullThresholdForQueue = pullThresholdForQueue;
+		return this;
+	}
+
+	public int getPullThresholdSizeForQueue() {
+		return pullThresholdSizeForQueue;
+	}
+
+	public RocketMQConsumerProperties setPullThresholdSizeForQueue(int pullThresholdSizeForQueue) {
+		this.pullThresholdSizeForQueue = pullThresholdSizeForQueue;
+		return this;
+	}
+
+	public int getPullBatchSize() {
+		return pullBatchSize;
+	}
+
+	public RocketMQConsumerProperties setPullBatchSize(int pullBatchSize) {
+		this.pullBatchSize = pullBatchSize;
+		return this;
+	}
+
+	public Pull getPull() {
+		return pull;
+	}
+
+	public RocketMQConsumerProperties setPull(Pull pull) {
+		this.pull = pull;
+		return this;
+	}
+
+	public int getConsumeMaxSpan() {
+		return consumeMaxSpan;
+	}
+
+	public RocketMQConsumerProperties setConsumeMaxSpan(int consumeMaxSpan) {
+		this.consumeMaxSpan = consumeMaxSpan;
+		return this;
+	}
+
+	public final boolean shouldRequeue() {
+		return getPush() != null && getPush().delayLevelWhenNextConsume != -1;
+	}
+
+	public static class Push implements Serializable {
+		private static final long serialVersionUID = -7398468554978817630L;
 
 		/**
 		 * if orderly is true, using {@link MessageListenerOrderly} else if orderly if false,
 		 * using {@link MessageListenerConcurrently}.
 		 */
 		private boolean orderly=false;
+		/**
+		 * see{@link ConsumeOrderlyContext#getSuspendCurrentQueueTimeMillis()}
+		 */
+		private int suspendCurrentQueueTimeMillis=1000;
+
+		/**
+		 * for concurrently listener. message consume retry strategy. see
+		 * {@link ConsumeConcurrentlyContext#getDelayLevelWhenNextConsume()}. -1 means dlq(or
+		 * discard, see {@link this#shouldRequeue}), others means requeue.
+		 */
+		private int delayLevelWhenNextConsume = 0;
+
+
+		/**
+		 * Flow control threshold on topic level, default value is -1(Unlimited)
+		 * <p>
+		 * The value of {@code pullThresholdForQueue} will be overwrote and calculated based on
+		 * {@code pullThresholdForTopic} if it is't unlimited
+		 * <p>
+		 * For example, if the value of pullThresholdForTopic is 1000 and 10 message queues are assigned to this consumer,
+		 * then pullThresholdForQueue will be set to 100
+		 */
+		private int pullThresholdForTopic = -1;
+
+		/**
+		 * Limit the cached message size on topic level, default value is -1 MiB(Unlimited)
+		 * <p>
+		 * The value of {@code pullThresholdSizeForQueue} will be overwrote and calculated based on
+		 * {@code pullThresholdSizeForTopic} if it is't unlimited
+		 * <p>
+		 * For example, if the value of pullThresholdSizeForTopic is 1000 MiB and 10 message queues are
+		 * assigned to this consumer, then pullThresholdSizeForQueue will be set to 100 MiB
+		 */
+		private int pullThresholdSizeForTopic = -1;
+
+		/**
+		 * Message pull Interval
+		 */
+		private long pullInterval = 0;
+
+		/**
+		 * Batch consumption size
+		 */
+		private int consumeMessageBatchMaxSize = 1;
 
 		public boolean getOrderly() {
 			return orderly;
@@ -141,7 +301,119 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 			this.orderly = orderly;
 			return this;
 		}
+
+		public int getSuspendCurrentQueueTimeMillis() {
+			return suspendCurrentQueueTimeMillis;
+		}
+
+		public Push setSuspendCurrentQueueTimeMillis(int suspendCurrentQueueTimeMillis) {
+			this.suspendCurrentQueueTimeMillis = suspendCurrentQueueTimeMillis;
+			return this;
+		}
+
+		public int getDelayLevelWhenNextConsume() {
+			return delayLevelWhenNextConsume;
+		}
+
+		public Push setDelayLevelWhenNextConsume(int delayLevelWhenNextConsume) {
+			this.delayLevelWhenNextConsume = delayLevelWhenNextConsume;
+			return this;
+		}
+
+		public int getPullThresholdForTopic() {
+			return pullThresholdForTopic;
+		}
+
+		public Push setPullThresholdForTopic(int pullThresholdForTopic) {
+			this.pullThresholdForTopic = pullThresholdForTopic;
+			return this;
+		}
+
+		public int getPullThresholdSizeForTopic() {
+			return pullThresholdSizeForTopic;
+		}
+
+		public Push setPullThresholdSizeForTopic(int pullThresholdSizeForTopic) {
+			this.pullThresholdSizeForTopic = pullThresholdSizeForTopic;
+			return this;
+		}
+
+		public long getPullInterval() {
+			return pullInterval;
+		}
+
+		public Push setPullInterval(long pullInterval) {
+			this.pullInterval = pullInterval;
+			return this;
+		}
+
+		public int getConsumeMessageBatchMaxSize() {
+			return consumeMessageBatchMaxSize;
+		}
+
+		public Push setConsumeMessageBatchMaxSize(int consumeMessageBatchMaxSize) {
+			this.consumeMessageBatchMaxSize = consumeMessageBatchMaxSize;
+			return this;
+		}
 	}
 
+
+	public static class Pull implements Serializable {
+		/**
+		 * The poll timeout in milliseconds
+		 */
+		private long pollTimeoutMillis = 1000 * 5;
+		/**
+		 * Pull thread number
+		 */
+		private int pullThreadNums = 20;
+
+		/**
+		 * Interval time in in milliseconds for checking changes in topic metadata.
+		 */
+		private long topicMetadataCheckIntervalMillis = 30 * 1000;
+
+		/**
+		 * Long polling mode, the Consumer connection timeout(must greater than brokerSuspendMaxTimeMillis), it is not
+		 * recommended to modify
+		 */
+		private long consumerTimeoutMillisWhenSuspend = 1000 * 30;
+
+		public long getPollTimeoutMillis() {
+			return pollTimeoutMillis;
+		}
+
+		public Pull setPollTimeoutMillis(long pollTimeoutMillis) {
+			this.pollTimeoutMillis = pollTimeoutMillis;
+			return this;
+		}
+
+		public int getPullThreadNums() {
+			return pullThreadNums;
+		}
+
+		public Pull setPullThreadNums(int pullThreadNums) {
+			this.pullThreadNums = pullThreadNums;
+			return this;
+		}
+
+		public long getTopicMetadataCheckIntervalMillis() {
+			return topicMetadataCheckIntervalMillis;
+		}
+
+		public Pull setTopicMetadataCheckIntervalMillis(long topicMetadataCheckIntervalMillis) {
+			this.topicMetadataCheckIntervalMillis = topicMetadataCheckIntervalMillis;
+			return this;
+		}
+
+		public long getConsumerTimeoutMillisWhenSuspend() {
+			return consumerTimeoutMillisWhenSuspend;
+		}
+
+		public Pull setConsumerTimeoutMillisWhenSuspend(long consumerTimeoutMillisWhenSuspend) {
+			this.consumerTimeoutMillisWhenSuspend = consumerTimeoutMillisWhenSuspend;
+			return this;
+		}
+	}
 
 }

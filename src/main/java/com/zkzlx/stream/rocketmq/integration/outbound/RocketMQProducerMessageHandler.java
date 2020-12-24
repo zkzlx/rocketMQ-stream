@@ -68,7 +68,7 @@ public class RocketMQProducerMessageHandler extends AbstractMessageHandler
 	private volatile boolean running = false;
 	private volatile boolean isTrans = false;
 
-	private ErrorMessageStrategy errorMessageStrategy = new DefaultErrorMessageStrategy();
+	private ErrorMessageStrategy errorMessageStrategy;
 	private MessageChannel sendFailureChannel;
 	private MessageConverterConfigurer.PartitioningInterceptor partitioningInterceptor;
 	private DefaultMQProducer defaultMQProducer;

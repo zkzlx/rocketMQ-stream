@@ -16,7 +16,7 @@
 
 package com.zkzlx.stream.rocketmq;
 
-import com.zkzlx.stream.rocketmq.integration.RocketMQMessageSource;
+import com.zkzlx.stream.rocketmq.integration.inbound.poll.RocketMQMessageSource;
 import com.zkzlx.stream.rocketmq.integration.inbound.RocketMQInboundChannelAdapter;
 import com.zkzlx.stream.rocketmq.integration.outbound.RocketMQProducerMessageHandler;
 import com.zkzlx.stream.rocketmq.properties.RocketMQBinderConfigurationProperties;
@@ -39,6 +39,8 @@ import org.springframework.integration.acks.AcknowledgmentCallback;
 import org.springframework.integration.acks.AcknowledgmentCallback.Status;
 import org.springframework.integration.channel.AbstractMessageChannel;
 import org.springframework.integration.core.MessageProducer;
+import org.springframework.integration.support.DefaultErrorMessageStrategy;
+import org.springframework.integration.support.ErrorMessageStrategy;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.MessagingException;
@@ -94,6 +96,7 @@ public class RocketMQMessageChannelBinder extends
 				.findFirst().orElse(null);
 		messageHandler.setPartitioningInterceptor(partitioningInterceptor);
 		messageHandler.setBeanFactory(this.getApplicationContext().getBeanFactory());
+		messageHandler.setErrorMessageStrategy(this.getErrorMessageStrategy());
 		return messageHandler;
 	}
 
@@ -172,6 +175,17 @@ public class RocketMQMessageChannelBinder extends
 		};
 	}
 
+	/**
+	 * Binders can return an {@link ErrorMessageStrategy} for building error messages;
+	 * binder implementations typically might add extra headers to the error message.
+	 *
+	 * @return the implementation - may be null.
+	 */
+	@Override
+	protected ErrorMessageStrategy getErrorMessageStrategy() {
+		//It can be extended to custom if necessary.
+		return new DefaultErrorMessageStrategy();
+	}
 
 	@Override
 	public RocketMQConsumerProperties getExtendedConsumerProperties(String channelName) {

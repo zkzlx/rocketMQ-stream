@@ -33,6 +33,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.Output;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.MessageBuilder;
 
@@ -41,6 +44,7 @@ import org.springframework.messaging.support.MessageBuilder;
  */
 @SpringBootApplication
 @EnableBinding({ MySource.class })
+@ComponentScan(value = "com.zkzlx.stream",excludeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE,classes = {RocketMQConsumerApplication.class}))
 public class RocketMQProduceApplication {
 
 	public static void main(String[] args) throws IOException {
@@ -61,10 +65,10 @@ public class RocketMQProduceApplication {
 		return new SenderService();
 	}
 
-//	@Bean
-//	public CustomRunnerWithTransactional customRunnerWithTransactional() {
-//		return new CustomRunnerWithTransactional();
-//	}
+	@Bean
+	public CustomRunnerWithTransactional customRunnerWithTransactional() {
+		return new CustomRunnerWithTransactional();
+	}
 
 	public interface MySource {
 
@@ -123,23 +127,23 @@ public class RocketMQProduceApplication {
 
 	}
 
-//	public static class CustomRunnerWithTransactional implements CommandLineRunner {
-//
-//		@Autowired
-//		private SenderService senderService;
-//
-//		@Override
-//		public void run(String... args) throws Exception {
-//			// COMMIT_MESSAGE message
-//			senderService.sendTransactionalMsg("transactional-msg1", 1);
-//			// ROLLBACK_MESSAGE message
-//			senderService.sendTransactionalMsg("transactional-msg2", 2);
-//			// ROLLBACK_MESSAGE message
-//			senderService.sendTransactionalMsg("transactional-msg3", 3);
-//			// COMMIT_MESSAGE message
-//			senderService.sendTransactionalMsg("transactional-msg4", 4);
-//		}
-//
-//	}
+	public static class CustomRunnerWithTransactional implements CommandLineRunner {
+
+		@Autowired
+		private SenderService senderService;
+
+		@Override
+		public void run(String... args) throws Exception {
+			// COMMIT_MESSAGE message
+			senderService.sendTransactionalMsg("transactional-msg1", 1);
+			// ROLLBACK_MESSAGE message
+			senderService.sendTransactionalMsg("transactional-msg2", 2);
+			// ROLLBACK_MESSAGE message
+			senderService.sendTransactionalMsg("transactional-msg3", 3);
+			// COMMIT_MESSAGE message
+			senderService.sendTransactionalMsg("transactional-msg4", 4);
+		}
+
+	}
 
 }

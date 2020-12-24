@@ -91,7 +91,7 @@ public class RocketMQInboundChannelAdapter extends MessageProducerSupport
 						context) -> RocketMQInboundChannelAdapter.this
 								.consumeMessage(msgs, () -> {
 									context.setSuspendCurrentQueueTimeMillis(
-											consumerProperties
+											consumerProperties.getPush()
 													.getSuspendCurrentQueueTimeMillis());
 									return ConsumeOrderlyStatus.SUSPEND_CURRENT_QUEUE_A_MOMENT;
 								}, () -> ConsumeOrderlyStatus.SUCCESS));
@@ -101,7 +101,7 @@ public class RocketMQInboundChannelAdapter extends MessageProducerSupport
 						context) -> RocketMQInboundChannelAdapter.this
 								.consumeMessage(msgs, () -> {
 									context.setDelayLevelWhenNextConsume(
-											consumerProperties
+											consumerProperties.getPush()
 													.getDelayLevelWhenNextConsume());
 									return ConsumeConcurrentlyStatus.RECONSUME_LATER;
 								}, () -> ConsumeConcurrentlyStatus.CONSUME_SUCCESS));

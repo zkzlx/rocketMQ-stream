@@ -37,12 +37,12 @@ public final class RocketMQProduceFactory {
                 "Property 'group' is required - producerGroup");
         Assert.notNull(producerProperties.getNameServer(), "Property 'nameServer' is required");
 
-        RPCHook rpcHook=null;
-        String ak = producerProperties.getAccessKey();
-        String sk = producerProperties.getSecretKey();
-        if (!StringUtils.isEmpty(ak) && !StringUtils.isEmpty(sk)) {
-            rpcHook = new AclClientRPCHook(new SessionCredentials(ak, sk));
-            producerProperties.setVipChannelEnabled(false);
+        RPCHook rpcHook = null;
+        if (!StringUtils.isEmpty(producerProperties.getAccessKey())
+                && !StringUtils.isEmpty(producerProperties.getSecretKey())) {
+            rpcHook = new AclClientRPCHook(
+                    new SessionCredentials(producerProperties.getAccessKey(),
+                            producerProperties.getSecretKey()));
         }
         DefaultMQProducer producer ;
         if(ProducerType.Trans.equalsName(producerProperties.getProducerType())){
@@ -67,7 +67,8 @@ public final class RocketMQProduceFactory {
                     ,producerProperties.getGroup(),rpcHook,producerProperties.getEnableMsgTrace(),producerProperties.getCustomizedTraceTopic());
         }
 
-        producer.setVipChannelEnabled(producerProperties.getVipChannelEnabled());
+		producer.setVipChannelEnabled(
+				null == rpcHook && producerProperties.getVipChannelEnabled());
         producer.setInstanceName(RocketMQUtils.getInstanceName(rpcHook,topic + "|" + UtilAll.getPid()));
         producer.setNamesrvAddr(producerProperties.getNameServer());
         producer.setSendMsgTimeout(producerProperties.getSendMsgTimeout());
@@ -76,6 +77,7 @@ public final class RocketMQProduceFactory {
         producer.setCompressMsgBodyOverHowmuch(producerProperties.getCompressMsgBodyThreshold());
         producer.setRetryAnotherBrokerWhenNotStoreOK(producerProperties.getRetryAnotherBroker());
         producer.setMaxMessageSize(producerProperties.getMaxMessageSize());
+        producer.setUseTLS(producerProperties.getUseTLS());
         return producer;
     }
 

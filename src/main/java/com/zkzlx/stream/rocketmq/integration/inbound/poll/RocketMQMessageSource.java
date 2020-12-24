@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.zkzlx.stream.rocketmq.integration;
+package com.zkzlx.stream.rocketmq.integration.inbound.poll;
 
 import java.util.List;
 
@@ -32,7 +32,13 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.Lifecycle;
+import org.springframework.integration.IntegrationMessageHeaderAccessor;
+import org.springframework.integration.acks.AcknowledgmentCallback;
 import org.springframework.integration.endpoint.AbstractMessageSource;
+import org.springframework.integration.support.MessageBuilder;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessagingException;
+import org.springframework.util.CollectionUtils;
 
 /**
  * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
@@ -43,23 +49,25 @@ public class RocketMQMessageSource extends AbstractMessageSource<Object>
 	private final static Logger log = LoggerFactory
 			.getLogger(RocketMQMessageSource.class);
 
-	private final String topic;
 
-	private final String group;
 
 	private DefaultLitePullConsumer consumer;
 
-	private boolean running;
+	private volatile boolean running;
 
-	private MessageSelector messageSelector;
 
+	private final String topic;
+	private final String group;
+	private final MessageSelector messageSelector;
+	private final RocketMQConsumerProperties consumerProperties;
 
 	public RocketMQMessageSource(String name, String group, RocketMQConsumerProperties consumerProperties) {
 		this.topic = name;
 		this.group = group;
 		this.messageSelector = RocketMQUtils.getMessageSelector(
 				consumerProperties.getSubscription());
-		this.consumer = RocketMQConsumerFactory.initPullConsumer(consumerProperties);
+		this.consumerProperties = consumerProperties;
+
 	}
 
 	@Override
@@ -69,21 +77,25 @@ public class RocketMQMessageSource extends AbstractMessageSource<Object>
 					"pull consumer already running. " + this.toString());
 		}
 		try {
-			consumer.subscribe(topic, messageSelector);
-
-			consumer.start();
+			this.consumer = RocketMQConsumerFactory.initPullConsumer(consumerProperties);
+			//This parameter must be 1, otherwise doReceive cannot be handled singly.
+			this.consumer.setPullBatchSize(1);
+			this.consumer.subscribe(topic, messageSelector);
+//			this.consumer.setAutoCommit(false);
+			this.consumer.start();
 		}
 		catch (MQClientException e) {
 			log.error("DefaultMQPullConsumer startup error: " + e.getMessage(), e);
 		}
-		this.setRunning(true);
+		this.running = true;
 	}
 
 	@Override
 	public synchronized void stop() {
-		if (this.isRunning()) {
-			this.setRunning(false);
+		if (this.isRunning() && null != consumer) {
+			consumer.unsubscribe(topic);
 			consumer.shutdown();
+			this.running = false;
 		}
 	}
 
@@ -95,18 +107,24 @@ public class RocketMQMessageSource extends AbstractMessageSource<Object>
 	@Override
 	protected synchronized Object doReceive() {
 		List<MessageExt> messageExtList = consumer.poll();
-
-		return RocketMQMessageConverterSupport.instance()
-				.convertMessage2Spring(messageExtList);
+		if(CollectionUtils.isEmpty(messageExtList) || messageExtList.size()>1){
+			log.warn("========================"+ String.valueOf(messageExtList));
+			return null;
+//			throw new MessagingException("The result of this message pull is not right and is not being processed.");
+		}
+		log.info("====================="+ messageExtList.get(0));
+		Message message = RocketMQMessageConverterSupport.instance()
+				.convertMessage2Spring(messageExtList.get(0));
+		//这里要处理消费结果，如果失败则。。。。。
+		return MessageBuilder.fromMessage(message).setHeader(
+				IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK,
+				new RocketMQAckCallback(messageExtList.get(0))
+				).build();
 	}
 
 	@Override
 	public String getComponentType() {
 		return "rocketmq:message-source";
-	}
-
-	public synchronized void setRunning(boolean running) {
-		this.running = running;
 	}
 
 }

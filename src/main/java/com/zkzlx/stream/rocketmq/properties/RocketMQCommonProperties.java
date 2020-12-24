@@ -16,13 +16,17 @@
 
 package com.zkzlx.stream.rocketmq.properties;
 
+import java.io.Serializable;
+
 import org.apache.rocketmq.client.AccessChannel;
+import org.apache.rocketmq.client.impl.factory.MQClientInstance;
 import org.apache.rocketmq.remoting.netty.TlsSystemConfig;
 
 /**
  * @author zkzlx
  */
-public class RocketMQCommonProperties{
+public class RocketMQCommonProperties implements Serializable {
+	private static final long serialVersionUID = -6724870154343284715L;
 
 	private boolean enabled=true;
 
@@ -58,18 +62,21 @@ public class RocketMQCommonProperties{
 	private String namespace;
 	private String accessChannel = AccessChannel.LOCAL.name();
 	/**
-	 * Pulling topic information interval from the named server
+	 * Pulling topic information interval from the named server.
+	 * see{@link MQClientInstance#startScheduledTask()},eg:ScheduledTask updateTopicRouteInfoFromNameServer.
 	 */
 	private int pollNameServerInterval = 1000 * 30;
 	/**
-	 * Heartbeat interval in microseconds with message broker
+	 * Heartbeat interval in microseconds with message broker.
+	 *  see{@link MQClientInstance#startScheduledTask()},eg:ScheduledTask sendHeartbeatToAllBroker .
 	 */
 	private int heartbeatBrokerInterval = 1000 * 30;
 	/**
-	 * Offset persistent interval for consumer
+	 * Offset persistent interval for consumer.
+	 * see{@link MQClientInstance#startScheduledTask()},eg:ScheduledTask sendHeartbeatToAllBroker .
 	 */
 	private int persistConsumerOffsetInterval = 1000 * 5;
-	private long pullTimeDelayMillsWhenException = 1000;
+
 	private boolean vipChannelEnabled = false;
 
 	private boolean useTLS = TlsSystemConfig.tlsEnable;
@@ -155,14 +162,6 @@ public class RocketMQCommonProperties{
 
 	public void setPersistConsumerOffsetInterval(int persistConsumerOffsetInterval) {
 		this.persistConsumerOffsetInterval = persistConsumerOffsetInterval;
-	}
-
-	public long getPullTimeDelayMillsWhenException() {
-		return pullTimeDelayMillsWhenException;
-	}
-
-	public void setPullTimeDelayMillsWhenException(long pullTimeDelayMillsWhenException) {
-		this.pullTimeDelayMillsWhenException = pullTimeDelayMillsWhenException;
 	}
 
 	public boolean getVipChannelEnabled() {

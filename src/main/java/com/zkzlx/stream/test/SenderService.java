@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.zkzlx.stream.RocketMQProduceApplication.MySource;
+import com.zkzlx.stream.rocketmq.contants.RocketMQConst;
 
 import org.apache.rocketmq.common.message.MessageConst;
 
@@ -56,13 +57,13 @@ public class SenderService {
 		source.output1().send(message);
 	}
 
-//	public <T> void sendTransactionalMsg(T msg, int num) throws Exception {
-//		MessageBuilder builder = MessageBuilder.withPayload(msg)
-//				.setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON);
-//		builder.setHeader("test", String.valueOf(num));
-//		builder.setHeader(RocketMQHeaders.TAGS, "binder");
-//		Message message = builder.build();
-//		source.output2().send(message);
-//	}
+	public <T> void sendTransactionalMsg(T msg, int num) throws Exception {
+		MessageBuilder builder = MessageBuilder.withPayload(msg)
+				.setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON);
+		builder.setHeader("test", String.valueOf(num));
+		builder.setHeader(RocketMQConst.USER_TAGS, "binder");
+		Message message = builder.build();
+		source.output2().send(message);
+	}
 
 }

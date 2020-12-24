@@ -57,7 +57,13 @@ public final class RocketMQConsumerFactory {
 		consumer.setNamespace(consumerProperties.getNamespace());
 		consumer.setNamesrvAddr(consumerProperties.getNameServer());
 		consumer.setMessageModel(getMessageModel(consumerProperties.getMessageModel()));
-
+		consumer.setUseTLS(consumerProperties.getUseTLS());
+		consumer.setPullTimeDelayMillsWhenException(consumerProperties.getPullTimeDelayMillsWhenException());
+		consumer.setPullBatchSize(consumerProperties.getPullBatchSize());
+		consumer.setConsumeFromWhere(consumerProperties.getConsumeFromWhere());
+		consumer.setHeartbeatBrokerInterval(consumerProperties.getHeartbeatBrokerInterval());
+		consumer.setPersistConsumerOffsetInterval(consumerProperties.getPersistConsumerOffsetInterval());
+		consumer.setPullInterval(consumerProperties.getPush().getPullInterval());
 		return consumer;
 	}
 
@@ -90,6 +96,14 @@ public final class RocketMQConsumerFactory {
 		consumer.setAllocateMessageQueueStrategy(allocateMessageQueueStrategy);
 		consumer.setNamesrvAddr(consumerProperties.getNameServer());
 		consumer.setMessageModel(getMessageModel(consumerProperties.getMessageModel()));
+		consumer.setUseTLS(consumerProperties.getUseTLS());
+		consumer.setPullTimeDelayMillsWhenException(consumerProperties.getPullTimeDelayMillsWhenException());
+		consumer.setConsumerTimeoutMillisWhenSuspend(consumerProperties.getPull().getConsumerTimeoutMillisWhenSuspend());
+		consumer.setPullBatchSize(consumerProperties.getPullBatchSize());
+		consumer.setConsumeFromWhere(consumerProperties.getConsumeFromWhere());
+		consumer.setHeartbeatBrokerInterval(consumerProperties.getHeartbeatBrokerInterval());
+		consumer.setPersistConsumerOffsetInterval(consumerProperties.getPersistConsumerOffsetInterval());
+		consumer.setPollTimeoutMillis(consumerProperties.getPull().getPollTimeoutMillis());
 		return consumer;
 	}
 
