@@ -20,12 +20,13 @@ import java.util.List;
 
 import com.zkzlx.stream.rocketmq.contants.RocketMQConst;
 import com.zkzlx.stream.rocketmq.custom.RocketMQBeanContainerCache;
+import com.zkzlx.stream.rocketmq.metrics.Instrumentation;
+import com.zkzlx.stream.rocketmq.metrics.InstrumentationManager;
 import com.zkzlx.stream.rocketmq.properties.RocketMQProducerProperties;
 import com.zkzlx.stream.rocketmq.properties.RocketMQProducerProperties.SendType;
 import com.zkzlx.stream.rocketmq.provisioning.selector.PartitionMessageQueueSelector;
 import com.zkzlx.stream.rocketmq.support.RocketMQMessageConverterSupport;
 
-import org.apache.rocketmq.client.consumer.MessageSelector;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -46,7 +47,6 @@ import org.springframework.cloud.stream.binding.MessageConverterConfigurer.Parti
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
 import org.springframework.context.Lifecycle;
 import org.springframework.integration.handler.AbstractMessageHandler;
-import org.springframework.integration.support.DefaultErrorMessageStrategy;
 import org.springframework.integration.support.ErrorMessageStrategy;
 import org.springframework.integration.support.ErrorMessageUtils;
 import org.springframework.messaging.Message;
@@ -106,7 +106,9 @@ public class RocketMQProducerMessageHandler extends AbstractMessageHandler
 
 	@Override
 	public void start() {
+		Instrumentation instrumentation = new Instrumentation(destination.getName());
 		try {
+			instrumentation.setActuator(this);
 			defaultMQProducer.start();
 			// TransactionMQProducer does not currently support custom
 			// MessageQueueSelector.
@@ -127,9 +129,13 @@ public class RocketMQProducerMessageHandler extends AbstractMessageHandler
 				}
 			}
 			running = true;
+			instrumentation.markStartedSuccessfully();
 		}
 		catch (MQClientException | NullPointerException e) {
+			instrumentation.markStartFailed(e);
 			log.error("The defaultMQProducer startup failure !!!", e);
+		}finally {
+			InstrumentationManager.addHealthInstrumentation(instrumentation);
 		}
 	}
 

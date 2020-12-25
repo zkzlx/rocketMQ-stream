@@ -3,6 +3,8 @@ package com.zkzlx.stream.rocketmq.integration.inbound;
 import java.util.List;
 import java.util.function.Supplier;
 
+import com.zkzlx.stream.rocketmq.metrics.Instrumentation;
+import com.zkzlx.stream.rocketmq.metrics.InstrumentationManager;
 import com.zkzlx.stream.rocketmq.properties.RocketMQConsumerProperties;
 import com.zkzlx.stream.rocketmq.support.RocketMQMessageConverterSupport;
 import com.zkzlx.stream.rocketmq.utils.RocketMQUtils;
@@ -82,9 +84,10 @@ public class RocketMQInboundChannelAdapter extends MessageProducerSupport
 				}
 			});
 		}
-
+		Instrumentation instrumentation = new Instrumentation(topic);
 		try {
 			pushConsumer = RocketMQConsumerFactory.initPushConsumer(consumerProperties);
+			instrumentation.setActuator(this);
 			//prepare register consumer message listener,the next step is to be compatible with a custom MessageListener.
 			if (consumerProperties.getPush().getOrderly()) {
 				pushConsumer.registerMessageListener((MessageListenerOrderly) (msgs,
@@ -106,16 +109,17 @@ public class RocketMQInboundChannelAdapter extends MessageProducerSupport
 									return ConsumeConcurrentlyStatus.RECONSUME_LATER;
 								}, () -> ConsumeConcurrentlyStatus.CONSUME_SUCCESS));
 			}
+			instrumentation.markStartedSuccessfully();
 		}
 		catch (Exception e) {
+			instrumentation.markStartFailed(e);
 			log.error("DefaultMQPushConsumer init failed, Caused by " + e.getMessage());
 			throw new MessagingException(MessageBuilder.withPayload(
 					"DefaultMQPushConsumer init failed, Caused by " + e.getMessage())
 					.build(), e);
+		}finally {
+			InstrumentationManager.addHealthInstrumentation(instrumentation);
 		}
-		// instrumentationManager.addHealthInstrumentation(
-		// new Instrumentation(rocketMQListenerContainer.getTopic()
-		// + rocketMQListenerContainer.getConsumerGroup()));
 	}
 
     /**

@@ -17,26 +17,20 @@
 package com.zkzlx.stream.rocketmq.integration.inbound.poll;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.zkzlx.stream.rocketmq.integration.inbound.RocketMQConsumerFactory;
+import com.zkzlx.stream.rocketmq.metrics.Instrumentation;
+import com.zkzlx.stream.rocketmq.metrics.InstrumentationManager;
 import com.zkzlx.stream.rocketmq.properties.RocketMQConsumerProperties;
 import com.zkzlx.stream.rocketmq.support.RocketMQMessageConverterSupport;
 import com.zkzlx.stream.rocketmq.utils.RocketMQUtils;
 
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
-import org.apache.rocketmq.client.consumer.MessageQueueListener;
 import org.apache.rocketmq.client.consumer.MessageSelector;
-import org.apache.rocketmq.client.consumer.PullResult;
-import org.apache.rocketmq.client.consumer.PullStatus;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.impl.consumer.AssignedMessageQueue;
 import org.apache.rocketmq.client.impl.consumer.DefaultLitePullConsumerImpl;
-import org.apache.rocketmq.client.impl.consumer.MessageQueueLock;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.slf4j.Logger;
@@ -45,12 +39,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.Lifecycle;
 import org.springframework.integration.IntegrationMessageHeaderAccessor;
-import org.springframework.integration.acks.AcknowledgmentCallback;
 import org.springframework.integration.endpoint.AbstractMessageSource;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.MessagingException;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 
@@ -88,8 +79,10 @@ public class RocketMQMessageSource extends AbstractMessageSource<Object>
 			throw new IllegalStateException(
 					"pull consumer already running. " + this.toString());
 		}
+		Instrumentation instrumentation = new Instrumentation(topic);
 		try {
 			this.consumer = RocketMQConsumerFactory.initPullConsumer(consumerProperties);
+			instrumentation.setActuator(this);
 			// The internal queues are cached by a maximum of 1000
 			this.consumer.setPullThresholdForAll(1000);
 			// This parameter must be 1, otherwise doReceive cannot be handled singly.
@@ -98,9 +91,13 @@ public class RocketMQMessageSource extends AbstractMessageSource<Object>
 			this.consumer.setAutoCommit(false);
 			this.assignedMessageQueue = acquireAssignedMessageQueue(this.consumer);
 			this.consumer.start();
+			instrumentation.markStartedSuccessfully();
 		}
 		catch (MQClientException e) {
+			instrumentation.markStartFailed(e);
 			log.error("DefaultMQPullConsumer startup error: " + e.getMessage(), e);
+		}finally {
+			InstrumentationManager.addHealthInstrumentation(instrumentation);
 		}
 		this.running = true;
 	}

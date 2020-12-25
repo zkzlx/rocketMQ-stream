@@ -17,6 +17,7 @@
 package com.zkzlx.stream.rocketmq.autoconfigurate;
 
 import com.zkzlx.stream.rocketmq.RocketMQMessageChannelBinder;
+import com.zkzlx.stream.rocketmq.actuator.RocketMQBinderHealthIndicator;
 import com.zkzlx.stream.rocketmq.config.RocketMQBeanConfiguration;
 import com.zkzlx.stream.rocketmq.properties.RocketMQBinderConfigurationProperties;
 import com.zkzlx.stream.rocketmq.properties.RocketMQExtendedBindingProperties;
@@ -59,6 +60,10 @@ public class RocketMQBinderAutoConfiguration {
 			RocketMQTopicProvisioner provisioningProvider) {
 		return new RocketMQMessageChannelBinder(rocketBinderConfigurationProperties,extendedBindingProperties,
 				provisioningProvider);
+	}
+	@Bean
+	public RocketMQBinderHealthIndicator rocketMQBinderHealthIndicator() {
+		return new RocketMQBinderHealthIndicator();
 	}
 
 }
