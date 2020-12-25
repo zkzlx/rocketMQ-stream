@@ -236,10 +236,6 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 		return this;
 	}
 
-	public final boolean shouldRequeue() {
-		return getPush() != null && getPush().delayLevelWhenNextConsume != -1;
-	}
-
 	public static class Push implements Serializable {
 		private static final long serialVersionUID = -7398468554978817630L;
 
@@ -256,7 +252,7 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 		/**
 		 * for concurrently listener. message consume retry strategy. see
 		 * {@link ConsumeConcurrentlyContext#getDelayLevelWhenNextConsume()}. -1 means dlq(or
-		 * discard, see {@link this#shouldRequeue}), others means requeue.
+		 * discard.
 		 */
 		private int delayLevelWhenNextConsume = 0;
 
@@ -379,6 +375,12 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 		 */
 		private long consumerTimeoutMillisWhenSuspend = 1000 * 30;
 
+		/**
+		 * Ack state handling, including receive, reject, and retry, when a consumption exception occurs.
+		 * see {@link }
+		 */
+		private String errAcknowledge;
+
 		public long getPollTimeoutMillis() {
 			return pollTimeoutMillis;
 		}
@@ -413,6 +415,14 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 		public Pull setConsumerTimeoutMillisWhenSuspend(long consumerTimeoutMillisWhenSuspend) {
 			this.consumerTimeoutMillisWhenSuspend = consumerTimeoutMillisWhenSuspend;
 			return this;
+		}
+
+		public String getErrAcknowledge() {
+			return errAcknowledge;
+		}
+
+		public void setErrAcknowledge(String errAcknowledge) {
+			this.errAcknowledge = errAcknowledge;
 		}
 	}
 

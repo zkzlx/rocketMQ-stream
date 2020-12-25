@@ -34,7 +34,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.messaging.SubscribableChannel;
 
 /**
- * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
+ * @author zkzlx
  */
 @SpringBootApplication
 @EnableBinding({ MySink.class })
@@ -85,10 +85,13 @@ public class RocketMQConsumerApplication {
 			while (true) {
 				mySink.input5().poll(m -> {
 					String payload = (String) m.getPayload();
+					if(payload.contains("9")){
+						throw new IllegalArgumentException("111111111111111111111111111111111111111111");
+					}
 					System.out.println("pull msg: " + payload);
 				}, new ParameterizedTypeReference<String>() {
 				});
-				Thread.sleep(2_000);
+				Thread.sleep(500);
 			}
 		}
 

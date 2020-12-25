@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Import;
 
 /**
  * @author Timur Valiev
- * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
+ * @author zkzlx
  */
 @Configuration(proxyBeanMethods = false)
 @Import({ RocketMQBeanConfiguration.class })

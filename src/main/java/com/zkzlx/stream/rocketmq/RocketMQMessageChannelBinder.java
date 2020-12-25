@@ -16,6 +16,9 @@
 
 package com.zkzlx.stream.rocketmq;
 
+import com.zkzlx.stream.rocketmq.custom.RocketMQBeanContainerCache;
+import com.zkzlx.stream.rocketmq.extend.ErrorAcknowledgeHandler;
+import com.zkzlx.stream.rocketmq.integration.inbound.poll.DefaultErrorAcknowledgeHandler;
 import com.zkzlx.stream.rocketmq.integration.inbound.poll.RocketMQMessageSource;
 import com.zkzlx.stream.rocketmq.integration.inbound.RocketMQInboundChannelAdapter;
 import com.zkzlx.stream.rocketmq.integration.outbound.RocketMQProducerMessageHandler;
@@ -164,12 +167,13 @@ public class RocketMQMessageChannelBinder extends
 								((MessagingException) message.getPayload())
 										.getFailedMessage());
 				if (ack != null) {
-					if (properties.getExtension().shouldRequeue()) {
-						ack.acknowledge(Status.REQUEUE);
-					}
-					else {
-						ack.acknowledge(Status.REJECT);
-					}
+					ErrorAcknowledgeHandler handler = RocketMQBeanContainerCache.getBean(
+							properties.getExtension().getPull().getErrAcknowledge(),
+							ErrorAcknowledgeHandler.class,
+							new DefaultErrorAcknowledgeHandler());
+					ack.acknowledge(
+							handler.handler(((MessagingException) message.getPayload())
+									.getFailedMessage()));
 				}
 			}
 		};

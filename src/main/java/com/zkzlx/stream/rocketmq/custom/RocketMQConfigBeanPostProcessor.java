@@ -8,6 +8,8 @@ import org.apache.rocketmq.client.producer.TransactionListener;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
+import com.zkzlx.stream.rocketmq.extend.ErrorAcknowledgeHandler;
+
 /**
  * find RocketMQ bean by annotations
  *
@@ -32,6 +34,9 @@ public class RocketMQConfigBeanPostProcessor implements BeanPostProcessor {
 			RocketMQBeanContainerCache.putBean(beanName, bean);
 		}
 		else if (bean instanceof SendCallback) {
+			RocketMQBeanContainerCache.putBean(beanName, bean);
+		}
+		else if (bean instanceof ErrorAcknowledgeHandler) {
 			RocketMQBeanContainerCache.putBean(beanName, bean);
 		}
 
