@@ -60,34 +60,33 @@ public class RocketMQInboundChannelAdapter extends MessageProducerSupport
 		if (consumerProperties == null || !consumerProperties.getEnabled()) {
 			return;
 		}
-		super.onInit();
-		if (this.retryTemplate != null) {
-			Assert.state(getErrorChannel() == null,
-					"Cannot have an 'errorChannel' property when a 'RetryTemplate' is "
-							+ "provided; use an 'ErrorMessageSendingRecoverer' in the 'recoveryCallback' property to "
-							+ "send an error message when retries are exhausted");
-			this.retryTemplate.registerListener(new RetryListener() {
-				@Override
-				public <T, E extends Throwable> boolean open(RetryContext context,
-						RetryCallback<T, E> callback) {
-					return true;
-				}
-
-				@Override
-				public <T, E extends Throwable> void close(RetryContext context,
-						RetryCallback<T, E> callback, Throwable throwable) {
-				}
-
-				@Override
-				public <T, E extends Throwable> void onError(RetryContext context,
-						RetryCallback<T, E> callback, Throwable throwable) {
-				}
-			});
-		}
-		Instrumentation instrumentation = new Instrumentation(topic);
+		Instrumentation instrumentation = new Instrumentation(topic,this);
 		try {
+			super.onInit();
+			if (this.retryTemplate != null) {
+				Assert.state(getErrorChannel() == null,
+						"Cannot have an 'errorChannel' property when a 'RetryTemplate' is "
+								+ "provided; use an 'ErrorMessageSendingRecoverer' in the 'recoveryCallback' property to "
+								+ "send an error message when retries are exhausted");
+				this.retryTemplate.registerListener(new RetryListener() {
+					@Override
+					public <T, E extends Throwable> boolean open(RetryContext context,
+																 RetryCallback<T, E> callback) {
+						return true;
+					}
+
+					@Override
+					public <T, E extends Throwable> void close(RetryContext context,
+															   RetryCallback<T, E> callback, Throwable throwable) {
+					}
+
+					@Override
+					public <T, E extends Throwable> void onError(RetryContext context,
+																 RetryCallback<T, E> callback, Throwable throwable) {
+					}
+				});
+			}
 			pushConsumer = RocketMQConsumerFactory.initPushConsumer(consumerProperties);
-			instrumentation.setActuator(this);
 			//prepare register consumer message listener,the next step is to be compatible with a custom MessageListener.
 			if (consumerProperties.getPush().getOrderly()) {
 				pushConsumer.registerMessageListener((MessageListenerOrderly) (msgs,

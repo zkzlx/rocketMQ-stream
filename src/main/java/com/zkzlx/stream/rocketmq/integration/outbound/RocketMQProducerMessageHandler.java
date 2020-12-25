@@ -106,9 +106,8 @@ public class RocketMQProducerMessageHandler extends AbstractMessageHandler
 
 	@Override
 	public void start() {
-		Instrumentation instrumentation = new Instrumentation(destination.getName());
+		Instrumentation instrumentation = new Instrumentation(destination.getName(),this);
 		try {
-			instrumentation.setActuator(this);
 			defaultMQProducer.start();
 			// TransactionMQProducer does not currently support custom
 			// MessageQueueSelector.

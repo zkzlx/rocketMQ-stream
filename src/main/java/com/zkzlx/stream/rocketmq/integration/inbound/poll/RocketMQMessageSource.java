@@ -75,14 +75,13 @@ public class RocketMQMessageSource extends AbstractMessageSource<Object>
 
 	@Override
 	public synchronized void start() {
-		if (this.isRunning()) {
-			throw new IllegalStateException(
-					"pull consumer already running. " + this.toString());
-		}
-		Instrumentation instrumentation = new Instrumentation(topic);
+		Instrumentation instrumentation = new Instrumentation(topic,this);
 		try {
+			if (this.isRunning()) {
+				throw new IllegalStateException(
+						"pull consumer already running. " + this.toString());
+			}
 			this.consumer = RocketMQConsumerFactory.initPullConsumer(consumerProperties);
-			instrumentation.setActuator(this);
 			// The internal queues are cached by a maximum of 1000
 			this.consumer.setPullThresholdForAll(1000);
 			// This parameter must be 1, otherwise doReceive cannot be handled singly.
