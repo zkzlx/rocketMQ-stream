@@ -31,7 +31,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.MimeTypeUtils;
 
 /**
- * @author zkzlx
+ * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
 public class SenderService {
 

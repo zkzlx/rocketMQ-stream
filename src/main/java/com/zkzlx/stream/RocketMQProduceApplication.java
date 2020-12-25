@@ -40,7 +40,7 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.MessageBuilder;
 
 /**
- * @author zkzlx
+ * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
 @SpringBootApplication
 @EnableBinding({ MySource.class })

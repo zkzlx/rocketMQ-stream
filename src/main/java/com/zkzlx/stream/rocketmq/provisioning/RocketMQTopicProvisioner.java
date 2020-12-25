@@ -31,7 +31,7 @@ import org.springframework.cloud.stream.provisioning.ProvisioningProvider;
 
 /**
  * @author Timur Valiev
- * @author zkzlx
+ * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
 public class RocketMQTopicProvisioner implements
 		ProvisioningProvider<ExtendedConsumerProperties<RocketMQConsumerProperties>, ExtendedProducerProperties<RocketMQProducerProperties>> {

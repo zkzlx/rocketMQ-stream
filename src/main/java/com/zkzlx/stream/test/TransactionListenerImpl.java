@@ -21,7 +21,7 @@ import org.apache.rocketmq.client.producer.TransactionListener;
 import org.apache.rocketmq.common.message.MessageExt;
 
 /**
- * @author zkzlx
+ * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
 public class TransactionListenerImpl implements TransactionListener {
 

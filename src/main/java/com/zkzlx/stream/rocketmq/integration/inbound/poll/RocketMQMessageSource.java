@@ -55,7 +55,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * @author zkzlx
+ * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
 public class RocketMQMessageSource extends AbstractMessageSource<Object>
 		implements DisposableBean, Lifecycle {

@@ -17,7 +17,7 @@
 package com.zkzlx.stream.test;
 
 /**
- * @author zkzlx
+ * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
 public class Foo {
 

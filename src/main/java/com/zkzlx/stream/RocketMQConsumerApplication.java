@@ -34,7 +34,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.messaging.SubscribableChannel;
 
 /**
- * @author zkzlx
+ * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
 @SpringBootApplication
 @EnableBinding({ MySink.class })
