@@ -137,7 +137,7 @@ public class RocketMQInboundChannelAdapter extends MessageProducerSupport
 		}
 		for (MessageExt messageExt : messageExtList) {
 			try {
-				Message message = RocketMQMessageConverterSupport.instance()
+				Message message = RocketMQMessageConverterSupport
 						.convertMessage2Spring(messageExt);
 				if (this.retryTemplate != null) {
 					this.retryTemplate.execute(context -> {

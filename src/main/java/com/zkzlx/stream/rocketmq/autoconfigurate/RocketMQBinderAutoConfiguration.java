@@ -31,6 +31,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.converter.CompositeMessageConverter;
 
 /**
  * @author Timur Valiev
@@ -53,8 +54,8 @@ public class RocketMQBinderAutoConfiguration {
 
 	@Bean(RocketMQMessageConverter.DEFAULT_NAME)
 	@ConditionalOnMissingBean(name = {RocketMQMessageConverter.DEFAULT_NAME})
-	public RocketMQMessageConverter initRocketMQMessageConverter() {
-		return new RocketMQMessageConverter();
+	public CompositeMessageConverter rocketMQMessageConverter() {
+		return new RocketMQMessageConverter().getMessageConverter();
 	}
 
 	@Bean
@@ -76,9 +77,4 @@ public class RocketMQBinderAutoConfiguration {
 				provisioningProvider);
 	}
 
-
-	@Bean
-	public MyEndPoint myEndPoint(){
-		return new MyEndPoint();
-	}
 }

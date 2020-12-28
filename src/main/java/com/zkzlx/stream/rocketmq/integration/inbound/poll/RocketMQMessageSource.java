@@ -75,7 +75,7 @@ public class RocketMQMessageSource extends AbstractMessageSource<Object>
 
 	@Override
 	public synchronized void start() {
-		Instrumentation instrumentation = new Instrumentation(topic,this);
+		Instrumentation instrumentation = new Instrumentation(topic, this);
 		try {
 			if (this.isRunning()) {
 				throw new IllegalStateException(
@@ -95,12 +95,12 @@ public class RocketMQMessageSource extends AbstractMessageSource<Object>
 		catch (MQClientException e) {
 			instrumentation.markStartFailed(e);
 			log.error("DefaultMQPullConsumer startup error: " + e.getMessage(), e);
-		}finally {
+		}
+		finally {
 			InstrumentationManager.addHealthInstrumentation(instrumentation);
 		}
 		this.running = true;
 	}
-
 
 	private AssignedMessageQueue acquireAssignedMessageQueue(
 			DefaultLitePullConsumer consumer) {
@@ -147,7 +147,7 @@ public class RocketMQMessageSource extends AbstractMessageSource<Object>
 				break;
 			}
 		}
-		Message message = RocketMQMessageConverterSupport.instance()
+		Message message = RocketMQMessageConverterSupport
 				.convertMessage2Spring(messageExtList.get(0));
 		return MessageBuilder.fromMessage(message)
 				.setHeader(IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK,

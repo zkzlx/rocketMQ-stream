@@ -62,9 +62,6 @@ public class RocketMQProducerMessageHandler extends AbstractMessageHandler
 	private final static Logger log = LoggerFactory
 			.getLogger(RocketMQProducerMessageHandler.class);
 
-	private final RocketMQMessageConverterSupport messageConverterSupport = RocketMQMessageConverterSupport
-			.instance();
-
 	private volatile boolean running = false;
 	private volatile boolean isTrans = false;
 
@@ -154,7 +151,7 @@ public class RocketMQProducerMessageHandler extends AbstractMessageHandler
 	@Override
 	protected void handleMessageInternal(Message<?> message) {
 		try {
-			org.apache.rocketmq.common.message.Message mqMessage = messageConverterSupport
+			org.apache.rocketmq.common.message.Message mqMessage = RocketMQMessageConverterSupport
 					.convertMessage2MQ(destination.getName(), message);
 			SendResult sendResult;
 			if (defaultMQProducer instanceof TransactionMQProducer) {
