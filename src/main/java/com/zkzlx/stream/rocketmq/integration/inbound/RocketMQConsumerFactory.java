@@ -67,6 +67,11 @@ public final class RocketMQConsumerFactory {
 		return consumer;
 	}
 
+	/**
+	 * todo Compatible with versions less than 4.6 ?
+	 * @param consumerProperties
+	 * @return
+	 */
 	public static DefaultLitePullConsumer initPullConsumer(
 			RocketMQConsumerProperties consumerProperties) {
 		Assert.notNull(consumerProperties.getGroup(),
