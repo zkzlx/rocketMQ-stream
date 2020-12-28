@@ -22,19 +22,45 @@ import org.apache.rocketmq.common.message.MessageConst;
  * @author zkzlx
  */
 public class RocketMQConst extends MessageConst {
-	public static final String USER_SELECTOR_ARGS = "SELECTOR_ARGS";
 	public static final String USER_TRANSACTIONAL_ARGS = "TRANSACTIONAL_ARGS";
 
-	public static final String USER_PREFIX = "rocketmq_";
-	public static final String USER_KEYS = MessageConst.PROPERTY_KEYS;
-	public static final String USER_TAGS = MessageConst.PROPERTY_TAGS;
-	public static final String USER_TOPIC = "TOPIC";
-	public static final String USER_MESSAGE_ID = "MESSAGE_ID";
-	public static final String USER_BORN_TIMESTAMP = "BORN_TIMESTAMP";
-	public static final String USER_BORN_HOST = "BORN_HOST";
-	public static final String USER_FLAG = "FLAG";
-	public static final String USER_QUEUE_ID = "QUEUE_ID";
-	public static final String USER_SYS_FLAG = "SYS_FLAG";
-	public static final String USER_TRANSACTION_ID = "TRANSACTION_ID";
+	/**
+	 * It is mainly provided for conversion between rocketMq-message and Spring-message, and parameters are passed through HEADERS.
+	 */
+	public static class Headers {
+		public static final String KEYS = MessageConst.PROPERTY_KEYS;
+		public static final String TAGS = MessageConst.PROPERTY_TAGS;
+		public static final String TOPIC = "MQ_TOPIC";
+		/**
+		 * The ID of the message.
+		 */
+		public static final String MESSAGE_ID = "MQ_MESSAGE_ID";
+		/**
+		 * The timestamp that the message producer invokes the message sending API.
+		 */
+		public static final String BORN_TIMESTAMP = "MQ_BORN_TIMESTAMP";
+		/**
+		 * The IP and port number of the message producer
+		 */
+		public static final String BORN_HOST = "MQ_BORN_HOST";
+
+		/**
+		 * Message flag, MQ is not processed and is available for use by applications.
+		 */
+		public static final String FLAG = "MQ_FLAG";
+		/**
+		 * Message consumption queue ID
+		 */
+		public static final String QUEUE_ID = "MQ_QUEUE_ID";
+		/**
+		 * Message system Flag, such as whether or not to compress, whether or not to transactional messages.
+		 */
+		public static final String SYS_FLAG = "MQ_SYS_FLAG";
+		/**
+		 * The transaction ID of the transaction message.
+		 */
+		public static final String TRANSACTION_ID = "MQ_TRANSACTION_ID";
+	}
+
 
 }

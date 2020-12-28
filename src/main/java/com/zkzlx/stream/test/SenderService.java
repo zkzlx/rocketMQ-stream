@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 
 import com.zkzlx.stream.RocketMQProduceApplication.MySource;
 import com.zkzlx.stream.rocketmq.contants.RocketMQConst;
+import com.zkzlx.stream.rocketmq.contants.RocketMQConst.Headers;
 
 import org.apache.rocketmq.common.message.MessageConst;
 
@@ -61,7 +62,7 @@ public class SenderService {
 		MessageBuilder builder = MessageBuilder.withPayload(msg)
 				.setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON);
 		builder.setHeader("test", String.valueOf(num));
-		builder.setHeader(RocketMQConst.USER_TAGS, "binder");
+		builder.setHeader(Headers.TAGS, "transsss");
 		Message message = builder.build();
 		source.output2().send(message);
 	}

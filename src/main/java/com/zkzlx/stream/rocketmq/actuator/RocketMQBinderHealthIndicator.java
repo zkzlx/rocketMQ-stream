@@ -16,12 +16,11 @@
 
 package com.zkzlx.stream.rocketmq.actuator;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.health.AbstractHealthIndicator;
-import org.springframework.boot.actuate.health.Health;
-
 import com.zkzlx.stream.rocketmq.metrics.Instrumentation;
 import com.zkzlx.stream.rocketmq.metrics.InstrumentationManager;
+
+import org.springframework.boot.actuate.health.AbstractHealthIndicator;
+import org.springframework.boot.actuate.health.Health;
 
 /**
  * @author Timur Valiev

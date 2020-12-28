@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.common.message.MessageExt;
@@ -39,6 +38,7 @@ import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.StringUtils;
 
 import com.zkzlx.stream.rocketmq.contants.RocketMQConst;
+import com.zkzlx.stream.rocketmq.contants.RocketMQConst.Headers;
 
 /**
  * TODO Describe what it does
@@ -69,7 +69,8 @@ public class RocketMQMessageConverterSupport {
         messageConverters.add(byteArrayMessageConverter);
         messageConverters.add(new StringMessageConverter());
         if (JACKSON_PRESENT) {
-            messageConverters.add(new MappingJackson2MessageConverter());
+            MappingJackson2MessageConverter jackson2MessageConverter= new MappingJackson2MessageConverter();
+            messageConverters.add(jackson2MessageConverter);
         }
         if (FASTJSON_PRESENT) {
             try {
@@ -85,33 +86,30 @@ public class RocketMQMessageConverterSupport {
     }
 
 
-    public List<Message> convertMessage2Spring(List<MessageExt> messageExtList) {
-        return messageExtList.stream().map(this::convertMessage2Spring).collect(Collectors.toList());
-    }
     public Message convertMessage2Spring(MessageExt message) {
         MessageBuilder messageBuilder = MessageBuilder.withPayload(message.getBody())
-                .setHeader(toRocketHeaderKey(RocketMQConst.USER_KEYS), message.getKeys())
-                .setHeader(toRocketHeaderKey(RocketMQConst.USER_KEYS), message.getTags())
-                .setHeader(toRocketHeaderKey(RocketMQConst.USER_TOPIC), message.getTopic())
-                .setHeader(toRocketHeaderKey(RocketMQConst.USER_MESSAGE_ID),
+                .setHeader(toRocketHeaderKey(Headers.KEYS), message.getKeys())
+                .setHeader(toRocketHeaderKey(Headers.TAGS), message.getTags())
+                .setHeader(toRocketHeaderKey(Headers.TOPIC), message.getTopic())
+                .setHeader(toRocketHeaderKey(Headers.MESSAGE_ID),
                         message.getMsgId())
-                .setHeader(toRocketHeaderKey(RocketMQConst.USER_BORN_TIMESTAMP),
+                .setHeader(toRocketHeaderKey(Headers.BORN_TIMESTAMP),
                         message.getBornTimestamp())
-                .setHeader(toRocketHeaderKey(RocketMQConst.USER_BORN_HOST),
+                .setHeader(toRocketHeaderKey(Headers.BORN_HOST),
                         message.getBornHostString())
-                .setHeader(toRocketHeaderKey(RocketMQConst.USER_FLAG), message.getFlag())
-                .setHeader(toRocketHeaderKey(RocketMQConst.USER_QUEUE_ID),
+                .setHeader(toRocketHeaderKey(Headers.FLAG), message.getFlag())
+                .setHeader(toRocketHeaderKey(Headers.QUEUE_ID),
                         message.getQueueId())
-                .setHeader(toRocketHeaderKey(RocketMQConst.USER_SYS_FLAG),
+                .setHeader(toRocketHeaderKey(Headers.SYS_FLAG),
                         message.getSysFlag())
-                .setHeader(toRocketHeaderKey(RocketMQConst.USER_TRANSACTION_ID),
+                .setHeader(toRocketHeaderKey(Headers.TRANSACTION_ID),
                         message.getTransactionId());
         addUserProperties(message.getProperties(), messageBuilder);
         return messageBuilder.build();
     }
 
     public static String toRocketHeaderKey(String rawKey) {
-        return "rocketmq-" + rawKey;
+        return "ROCKET_" + rawKey;
     }
 
     private static void addUserProperties(Map<String, String> properties, MessageBuilder messageBuilder) {
@@ -131,11 +129,10 @@ public class RocketMQMessageConverterSupport {
         MessageBuilder<?> builder = MessageBuilder.fromMessage(message);
         builder.setHeaderIfAbsent(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.TEXT_PLAIN);
         message = builder.build();
-
         return this.doConvert(destination,message);
     }
 
-    private org.apache.rocketmq.common.message.Message doConvert(String destination, Message<?> message) {
+    private org.apache.rocketmq.common.message.Message doConvert(String topic, Message<?> message) {
         Charset charset = Charset.defaultCharset();
         Object payloadObj = message.getPayload();
         byte[] payloads;
@@ -159,43 +156,40 @@ public class RocketMQMessageConverterSupport {
         } catch (Exception e) {
             throw new RuntimeException("convert to RocketMQ message failed.", e);
         }
-        return getAndWrapMessage(destination, message.getHeaders(), payloads);
+        return getAndWrapMessage(topic, message.getHeaders(), payloads);
     }
 
 
-    private static org.apache.rocketmq.common.message.Message getAndWrapMessage(String destination, MessageHeaders headers, byte[] payloads) {
-        if (destination == null || destination.length() < 1) {
+    private static org.apache.rocketmq.common.message.Message getAndWrapMessage(String topic, MessageHeaders headers, byte[] payloads) {
+        if (topic == null || topic.length() < 1) {
             return null;
         }
         if (payloads == null || payloads.length < 1) {
             return null;
         }
-        String[] tempArr = destination.split(":", 2);
-        String topic = tempArr[0];
-        String tags = "";
-        if (tempArr.length > 1) {
-            tags = tempArr[1];
-        }
-        org.apache.rocketmq.common.message.Message rocketMsg = new org.apache.rocketmq.common.message.Message(topic, tags, payloads);
+        org.apache.rocketmq.common.message.Message rocketMsg = new org.apache.rocketmq.common.message.Message(topic, payloads);
         if (Objects.nonNull(headers) && !headers.isEmpty()) {
-            Object tag = headers.getOrDefault(RocketMQConst.PROPERTY_TAGS, "");
+            Object tag = headers.getOrDefault(Headers.TAGS, headers.get(toRocketHeaderKey(Headers.TAGS)));
             if (!StringUtils.isEmpty(tag)) {
-                rocketMsg.setTags(String.join("||", tag.toString(),tags));
+                rocketMsg.setTags(String.valueOf(tag));
             }
 
-            Object keys = headers.get(RocketMQConst.PROPERTY_KEYS);
+            Object keys = headers.getOrDefault(Headers.KEYS, headers.get(toRocketHeaderKey(Headers.KEYS)));
             if (!StringUtils.isEmpty(keys)) {
                 rocketMsg.setKeys(keys.toString());
             }
-            Object flagObj = headers.getOrDefault("FLAG", "0");
+            Object flagObj = headers.getOrDefault(Headers.FLAG, headers.get(toRocketHeaderKey(Headers.FLAG)));
             int flag = 0;
             int delayLevel = 0;
-            try {
-                Object delayLevelObj = headers
-                        .getOrDefault(MessageConst.PROPERTY_DELAY_TIME_LEVEL, 0);
-                delayLevel = Integer.parseInt(String.valueOf(delayLevelObj));
-                flag = Integer.parseInt(flagObj.toString());
-            }
+			try {
+				flagObj = flagObj == null ? 0 : flagObj;
+				Object delayLevelObj = headers.getOrDefault(
+                        RocketMQConst.PROPERTY_DELAY_TIME_LEVEL,
+						headers.get(toRocketHeaderKey(RocketMQConst.PROPERTY_DELAY_TIME_LEVEL)));
+				delayLevelObj = delayLevelObj == null ? 0 : delayLevelObj;
+				delayLevel = Integer.parseInt(String.valueOf(delayLevelObj));
+				flag = Integer.parseInt(String.valueOf(flagObj));
+			}
             catch (Exception ignored) {
             }
             if (delayLevel > 0) {
@@ -205,7 +199,7 @@ public class RocketMQMessageConverterSupport {
             Object waitStoreMsgOkObj = headers.getOrDefault(RocketMQConst.PROPERTY_WAIT_STORE_MSG_OK, "true");
             rocketMsg.setWaitStoreMsgOK(Boolean.TRUE.equals(waitStoreMsgOkObj));
             headers.entrySet().stream()
-                    .filter(entry -> !Objects.equals(entry.getKey(), "FLAG")
+                    .filter(entry -> !Objects.equals(entry.getKey(), Headers.FLAG)
                             && !Objects.equals(entry.getKey(), RocketMQConst.PROPERTY_WAIT_STORE_MSG_OK))
                     .forEach(entry -> {
                         if (!MessageConst.STRING_HASH_SET.contains(entry.getKey())) {

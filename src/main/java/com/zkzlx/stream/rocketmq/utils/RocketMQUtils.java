@@ -23,7 +23,6 @@ import com.zkzlx.stream.rocketmq.properties.RocketMQCommonProperties;
 
 import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.acl.common.SessionCredentials;
-import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.MessageSelector;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.remoting.RPCHook;
@@ -84,12 +83,6 @@ public class RocketMQUtils {
 		return instanceName.toString();
 	}
 
-	public static String getNameServerStr(List<String> nameServerList) {
-		if (CollectionUtils.isEmpty(nameServerList)) {
-			return null;
-		}
-		return String.join(";", nameServerList);
-	}
 	public static String getNameServerStr(String nameServer) {
 		if (StringUtils.isEmpty(nameServer)) {
 			return null;
@@ -97,10 +90,10 @@ public class RocketMQUtils {
 		return nameServer.replaceAll(",",";");
 	}
 
-	private static final String sql = "sql:";
+	private static final String SQL = "sql:";
 	public static MessageSelector getMessageSelector(String expression) {
-		if (StringUtils.hasText(expression) && expression.startsWith(sql)) {
-			return MessageSelector.bySql(expression.replaceFirst(sql,""));
+		if (StringUtils.hasText(expression) && expression.startsWith(SQL)) {
+			return MessageSelector.bySql(expression.replaceFirst(SQL,""));
 		}
 		return MessageSelector.byTag(expression);
 	}

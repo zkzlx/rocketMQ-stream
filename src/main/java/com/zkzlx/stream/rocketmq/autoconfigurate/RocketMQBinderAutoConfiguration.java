@@ -18,36 +18,50 @@ package com.zkzlx.stream.rocketmq.autoconfigurate;
 
 import com.zkzlx.stream.rocketmq.RocketMQMessageChannelBinder;
 import com.zkzlx.stream.rocketmq.actuator.RocketMQBinderHealthIndicator;
-import com.zkzlx.stream.rocketmq.config.RocketMQBeanConfiguration;
+import com.zkzlx.stream.rocketmq.convert.RocketMQMessageConverter;
+import com.zkzlx.stream.rocketmq.custom.RocketMQConfigBeanPostProcessor;
 import com.zkzlx.stream.rocketmq.properties.RocketMQBinderConfigurationProperties;
 import com.zkzlx.stream.rocketmq.properties.RocketMQExtendedBindingProperties;
 import com.zkzlx.stream.rocketmq.provisioning.RocketMQTopicProvisioner;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
 /**
  * @author Timur Valiev
  * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
 @Configuration(proxyBeanMethods = false)
-@Import({ RocketMQBeanConfiguration.class })
 @EnableConfigurationProperties({ RocketMQExtendedBindingProperties.class,
 		RocketMQBinderConfigurationProperties.class })
 public class RocketMQBinderAutoConfiguration {
 
-	private final RocketMQExtendedBindingProperties extendedBindingProperties;
-	private final RocketMQBinderConfigurationProperties rocketBinderConfigurationProperties;
-
 	@Autowired
-	public RocketMQBinderAutoConfiguration(
-			RocketMQExtendedBindingProperties extendedBindingProperties,
-			RocketMQBinderConfigurationProperties rocketBinderConfigurationProperties) {
-		this.extendedBindingProperties = extendedBindingProperties;
-		this.rocketBinderConfigurationProperties = rocketBinderConfigurationProperties;
+	private RocketMQExtendedBindingProperties extendedBindingProperties;
+	@Autowired
+	private RocketMQBinderConfigurationProperties rocketBinderConfigurationProperties;
+
+	@Bean
+	public RocketMQConfigBeanPostProcessor initRocketMQConfigBeanPostProcessor() {
+		return new RocketMQConfigBeanPostProcessor();
+	}
+
+	@Bean(RocketMQMessageConverter.DEFAULT_NAME)
+	@ConditionalOnMissingBean(name = {RocketMQMessageConverter.DEFAULT_NAME})
+	public RocketMQMessageConverter initRocketMQMessageConverter() {
+		return new RocketMQMessageConverter();
+	}
+
+	@Bean
+	@ConditionalOnEnabledHealthIndicator("rocketmq")
+	@ConditionalOnClass(name = "org.springframework.boot.actuate.health.HealthIndicator")
+	public RocketMQBinderHealthIndicator rocketMQBinderHealthIndicator() {
+		return new RocketMQBinderHealthIndicator();
 	}
 
 	@Bean
@@ -61,9 +75,10 @@ public class RocketMQBinderAutoConfiguration {
 		return new RocketMQMessageChannelBinder(rocketBinderConfigurationProperties,extendedBindingProperties,
 				provisioningProvider);
 	}
-	@Bean
-	public RocketMQBinderHealthIndicator rocketMQBinderHealthIndicator() {
-		return new RocketMQBinderHealthIndicator();
-	}
 
+
+	@Bean
+	public MyEndPoint myEndPoint(){
+		return new MyEndPoint();
+	}
 }
