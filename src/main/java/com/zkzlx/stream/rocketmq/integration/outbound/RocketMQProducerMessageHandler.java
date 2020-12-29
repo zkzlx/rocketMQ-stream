@@ -222,6 +222,11 @@ public class RocketMQProducerMessageHandler extends AbstractMessageHandler
 				"message hasn't been sent,cause by : the SendType must be in this values[OneWay, Async, Sync]");
 	}
 
+	/**
+	 * https://github.com/alibaba/spring-cloud-alibaba/issues/1408
+	 * @param message
+	 * @return
+	 */
 	private SendCallback getSendCallback(Message<?> message) {
 		SendCallback sendCallback = RocketMQBeanContainerCache
 				.getBean(mqProducerProperties.getSendCallBack(), SendCallback.class);

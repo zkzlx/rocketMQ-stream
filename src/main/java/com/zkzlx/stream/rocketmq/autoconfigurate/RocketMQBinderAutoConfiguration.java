@@ -34,6 +34,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.converter.CompositeMessageConverter;
 
 /**
+ * issue:https://github.com/alibaba/spring-cloud-alibaba/issues/1681
  * @author Timur Valiev
  * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
@@ -48,7 +49,7 @@ public class RocketMQBinderAutoConfiguration {
 	private RocketMQBinderConfigurationProperties rocketBinderConfigurationProperties;
 
 	@Bean
-	public RocketMQConfigBeanPostProcessor initRocketMQConfigBeanPostProcessor() {
+	public RocketMQConfigBeanPostProcessor rocketMQConfigBeanPostProcessor() {
 		return new RocketMQConfigBeanPostProcessor();
 	}
 
@@ -66,12 +67,12 @@ public class RocketMQBinderAutoConfiguration {
 	}
 
 	@Bean
-	public RocketMQTopicProvisioner provisioningProvider() {
+	public RocketMQTopicProvisioner rocketMQTopicProvisioner() {
 		return new RocketMQTopicProvisioner();
 	}
 
 	@Bean
-	public RocketMQMessageChannelBinder rocketMessageChannelBinder(
+	public RocketMQMessageChannelBinder rocketMQMessageChannelBinder(
 			RocketMQTopicProvisioner provisioningProvider) {
 		return new RocketMQMessageChannelBinder(rocketBinderConfigurationProperties,extendedBindingProperties,
 				provisioningProvider);

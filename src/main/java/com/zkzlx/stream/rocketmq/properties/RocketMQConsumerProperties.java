@@ -23,6 +23,8 @@ import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeOrderlyContext;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerOrderly;
+import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
+import org.apache.rocketmq.client.impl.consumer.ConsumeMessageOrderlyService;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
@@ -42,7 +44,6 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 	 */
 	private String messageModel = MessageModel.CLUSTERING.getModeCN();
 
-
 	/**
 	 * Queue allocation algorithm specifying how message queues are allocated to each
 	 * consumer clients.
@@ -57,7 +58,7 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 	 * Determines whether there are specific characters "{@code ||}" in the expression to
 	 * determine how the message is filtered,tags or SQL.
 	 */
-	private String subscription ;
+	private String subscription;
 
 	/**
 	 * Delay some time when exception occur
@@ -70,46 +71,45 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 	 *
 	 * There are three consuming points:
 	 * <ul>
-	 * <li>
-	 * <code>CONSUME_FROM_LAST_OFFSET</code>: consumer clients pick up where it stopped previously.
-	 * If it were a newly booting up consumer client, according aging of the consumer group, there are two
-	 * cases:
+	 * <li><code>CONSUME_FROM_LAST_OFFSET</code>: consumer clients pick up where it
+	 * stopped previously. If it were a newly booting up consumer client, according aging
+	 * of the consumer group, there are two cases:
 	 * <ol>
-	 * <li>
-	 * if the consumer group is created so recently that the earliest message being subscribed has yet
-	 * expired, which means the consumer group represents a lately launched business, consuming will
-	 * start from the very beginning;
-	 * </li>
-	 * <li>
-	 * if the earliest message being subscribed has expired, consuming will start from the latest
-	 * messages, meaning messages born prior to the booting timestamp would be ignored.
-	 * </li>
+	 * <li>if the consumer group is created so recently that the earliest message being
+	 * subscribed has yet expired, which means the consumer group represents a lately
+	 * launched business, consuming will start from the very beginning;</li>
+	 * <li>if the earliest message being subscribed has expired, consuming will start from
+	 * the latest messages, meaning messages born prior to the booting timestamp would be
+	 * ignored.</li>
 	 * </ol>
 	 * </li>
-	 * <li>
-	 * <code>CONSUME_FROM_FIRST_OFFSET</code>: Consumer client will start from earliest messages available.
-	 * </li>
-	 * <li>
-	 * <code>CONSUME_FROM_TIMESTAMP</code>: Consumer client will start from specified timestamp, which means
-	 * messages born prior to {@link #consumeTimestamp} will be ignored
-	 * </li>
+	 * <li><code>CONSUME_FROM_FIRST_OFFSET</code>: Consumer client will start from
+	 * earliest messages available.</li>
+	 * <li><code>CONSUME_FROM_TIMESTAMP</code>: Consumer client will start from specified
+	 * timestamp, which means messages born prior to {@link #consumeTimestamp} will be
+	 * ignored</li>
 	 * </ul>
 	 */
 	private ConsumeFromWhere consumeFromWhere = ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET;
 	/**
-	 * Backtracking consumption time with second precision. Time format is 20131223171201<br> Implying Seventeen twelve
-	 * and 01 seconds on December 23, 2013 year<br> Default backtracking consumption time Half an hour ago.
+	 * Backtracking consumption time with second precision. Time format is
+	 * 20131223171201<br>
+	 * Implying Seventeen twelve and 01 seconds on December 23, 2013 year<br>
+	 * Default backtracking consumption time Half an hour ago.
 	 */
-	private String consumeTimestamp = UtilAll.timeMillisToHumanString3(System.currentTimeMillis() - (1000 * 60 * 30));
+	private String consumeTimestamp = UtilAll
+			.timeMillisToHumanString3(System.currentTimeMillis() - (1000 * 60 * 30));
 
 	/**
-	 * Flow control threshold on queue level, each message queue will cache at most 1000 messages by default, Consider
-	 * the {@link #pullBatchSize}, the instantaneous value may exceed the limit
+	 * Flow control threshold on queue level, each message queue will cache at most 1000
+	 * messages by default, Consider the {@link #pullBatchSize}, the instantaneous value
+	 * may exceed the limit
 	 */
 	private int pullThresholdForQueue = 1000;
 	/**
-	 * Limit the cached message size on queue level, each message queue will cache at most 100 MiB messages by default,
-	 * Consider the {@link #pullBatchSize}, the instantaneous value may exceed the limit
+	 * Limit the cached message size on queue level, each message queue will cache at most
+	 * 100 MiB messages by default, Consider the {@link #pullBatchSize}, the instantaneous
+	 * value may exceed the limit
 	 *
 	 * <p>
 	 * The size of a message only measured by message body, so it's not accurate
@@ -126,8 +126,8 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 	 */
 	private int consumeMaxSpan = 2000;
 
-	private Push push=new Push();
-	private Pull pull=new Pull();
+	private Push push = new Push();
+	private Pull pull = new Pull();
 
 	public String getMessageModel() {
 		return messageModel;
@@ -137,7 +137,6 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 		this.messageModel = messageModel;
 		return this;
 	}
-
 
 	public String getAllocateMessageQueueStrategy() {
 		return allocateMessageQueueStrategy;
@@ -163,12 +162,12 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 		this.push = push;
 	}
 
-
 	public long getPullTimeDelayMillsWhenException() {
 		return pullTimeDelayMillsWhenException;
 	}
 
-	public RocketMQConsumerProperties setPullTimeDelayMillsWhenException(long pullTimeDelayMillsWhenException) {
+	public RocketMQConsumerProperties setPullTimeDelayMillsWhenException(
+			long pullTimeDelayMillsWhenException) {
 		this.pullTimeDelayMillsWhenException = pullTimeDelayMillsWhenException;
 		return this;
 	}
@@ -177,7 +176,8 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 		return consumeFromWhere;
 	}
 
-	public RocketMQConsumerProperties setConsumeFromWhere(ConsumeFromWhere consumeFromWhere) {
+	public RocketMQConsumerProperties setConsumeFromWhere(
+			ConsumeFromWhere consumeFromWhere) {
 		this.consumeFromWhere = consumeFromWhere;
 		return this;
 	}
@@ -195,7 +195,8 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 		return pullThresholdForQueue;
 	}
 
-	public RocketMQConsumerProperties setPullThresholdForQueue(int pullThresholdForQueue) {
+	public RocketMQConsumerProperties setPullThresholdForQueue(
+			int pullThresholdForQueue) {
 		this.pullThresholdForQueue = pullThresholdForQueue;
 		return this;
 	}
@@ -204,7 +205,8 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 		return pullThresholdSizeForQueue;
 	}
 
-	public RocketMQConsumerProperties setPullThresholdSizeForQueue(int pullThresholdSizeForQueue) {
+	public RocketMQConsumerProperties setPullThresholdSizeForQueue(
+			int pullThresholdSizeForQueue) {
 		this.pullThresholdSizeForQueue = pullThresholdSizeForQueue;
 		return this;
 	}
@@ -240,42 +242,55 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 		private static final long serialVersionUID = -7398468554978817630L;
 
 		/**
-		 * if orderly is true, using {@link MessageListenerOrderly} else if orderly if false,
-		 * using {@link MessageListenerConcurrently}.
+		 * if orderly is true, using {@link MessageListenerOrderly} else if orderly if
+		 * false, using {@link MessageListenerConcurrently}.
 		 */
-		private boolean orderly=false;
+		private boolean orderly = false;
 		/**
-		 * see{@link ConsumeOrderlyContext#getSuspendCurrentQueueTimeMillis()}
+		 * Suspending pulling time for cases requiring slow pulling like flow-control
+		 * scenario. see{@link ConsumeMessageOrderlyService#processConsumeResult}.
+		 * see{@link ConsumeOrderlyContext#getSuspendCurrentQueueTimeMillis}.
 		 */
-		private int suspendCurrentQueueTimeMillis=1000;
+		private int suspendCurrentQueueTimeMillis = 1000;
 
 		/**
-		 * for concurrently listener. message consume retry strategy. see
-		 * {@link ConsumeConcurrentlyContext#getDelayLevelWhenNextConsume()}. -1 means dlq(or
-		 * discard.
+		 * https://github.com/alibaba/spring-cloud-alibaba/issues/1866
+		 * Max re-consume times. -1 means 16 times.
+		 * </p>
+		 * If messages are re-consumed more than {@link #maxReconsumeTimes} before
+		 * success, it's be directed to a deletion queue waiting.
+		 */
+		private int maxReconsumeTimes;
+
+		/**
+		 * for concurrently listener. message consume retry strategy. -1 means dlq(or
+		 * discard. see {@link ConsumeMessageConcurrentlyService#processConsumeResult}.
+		 * see {@link ConsumeConcurrentlyContext#getDelayLevelWhenNextConsume}.
 		 */
 		private int delayLevelWhenNextConsume = 0;
-
 
 		/**
 		 * Flow control threshold on topic level, default value is -1(Unlimited)
 		 * <p>
-		 * The value of {@code pullThresholdForQueue} will be overwrote and calculated based on
-		 * {@code pullThresholdForTopic} if it is't unlimited
+		 * The value of {@code pullThresholdForQueue} will be overwrote and calculated
+		 * based on {@code pullThresholdForTopic} if it is't unlimited
 		 * <p>
-		 * For example, if the value of pullThresholdForTopic is 1000 and 10 message queues are assigned to this consumer,
-		 * then pullThresholdForQueue will be set to 100
+		 * For example, if the value of pullThresholdForTopic is 1000 and 10 message
+		 * queues are assigned to this consumer, then pullThresholdForQueue will be set to
+		 * 100.
 		 */
 		private int pullThresholdForTopic = -1;
 
 		/**
-		 * Limit the cached message size on topic level, default value is -1 MiB(Unlimited)
+		 * Limit the cached message size on topic level, default value is -1
+		 * MiB(Unlimited)
 		 * <p>
-		 * The value of {@code pullThresholdSizeForQueue} will be overwrote and calculated based on
-		 * {@code pullThresholdSizeForTopic} if it is't unlimited
+		 * The value of {@code pullThresholdSizeForQueue} will be overwrote and calculated
+		 * based on {@code pullThresholdSizeForTopic} if it is't unlimited
 		 * <p>
-		 * For example, if the value of pullThresholdSizeForTopic is 1000 MiB and 10 message queues are
-		 * assigned to this consumer, then pullThresholdSizeForQueue will be set to 100 MiB
+		 * For example, if the value of pullThresholdSizeForTopic is 1000 MiB and 10
+		 * message queues are assigned to this consumer, then pullThresholdSizeForQueue
+		 * will be set to 100 MiB
 		 */
 		private int pullThresholdSizeForTopic = -1;
 
@@ -293,66 +308,66 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 			return orderly;
 		}
 
-		public Push setOrderly(boolean orderly) {
+		public void setOrderly(boolean orderly) {
 			this.orderly = orderly;
-			return this;
 		}
 
 		public int getSuspendCurrentQueueTimeMillis() {
 			return suspendCurrentQueueTimeMillis;
 		}
 
-		public Push setSuspendCurrentQueueTimeMillis(int suspendCurrentQueueTimeMillis) {
+		public void setSuspendCurrentQueueTimeMillis(int suspendCurrentQueueTimeMillis) {
 			this.suspendCurrentQueueTimeMillis = suspendCurrentQueueTimeMillis;
-			return this;
+		}
+
+		public int getMaxReconsumeTimes() {
+			return maxReconsumeTimes;
+		}
+
+		public void setMaxReconsumeTimes(int maxReconsumeTimes) {
+			this.maxReconsumeTimes = maxReconsumeTimes;
 		}
 
 		public int getDelayLevelWhenNextConsume() {
 			return delayLevelWhenNextConsume;
 		}
 
-		public Push setDelayLevelWhenNextConsume(int delayLevelWhenNextConsume) {
+		public void setDelayLevelWhenNextConsume(int delayLevelWhenNextConsume) {
 			this.delayLevelWhenNextConsume = delayLevelWhenNextConsume;
-			return this;
 		}
 
 		public int getPullThresholdForTopic() {
 			return pullThresholdForTopic;
 		}
 
-		public Push setPullThresholdForTopic(int pullThresholdForTopic) {
+		public void setPullThresholdForTopic(int pullThresholdForTopic) {
 			this.pullThresholdForTopic = pullThresholdForTopic;
-			return this;
 		}
 
 		public int getPullThresholdSizeForTopic() {
 			return pullThresholdSizeForTopic;
 		}
 
-		public Push setPullThresholdSizeForTopic(int pullThresholdSizeForTopic) {
+		public void setPullThresholdSizeForTopic(int pullThresholdSizeForTopic) {
 			this.pullThresholdSizeForTopic = pullThresholdSizeForTopic;
-			return this;
 		}
 
 		public long getPullInterval() {
 			return pullInterval;
 		}
 
-		public Push setPullInterval(long pullInterval) {
+		public void setPullInterval(long pullInterval) {
 			this.pullInterval = pullInterval;
-			return this;
 		}
 
 		public int getConsumeMessageBatchMaxSize() {
 			return consumeMessageBatchMaxSize;
 		}
 
-		public Push setConsumeMessageBatchMaxSize(int consumeMessageBatchMaxSize) {
+		public void setConsumeMessageBatchMaxSize(int consumeMessageBatchMaxSize) {
 			this.consumeMessageBatchMaxSize = consumeMessageBatchMaxSize;
-			return this;
 		}
 	}
-
 
 	public static class Pull implements Serializable {
 		/**
@@ -370,14 +385,14 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 		private long topicMetadataCheckIntervalMillis = 30 * 1000;
 
 		/**
-		 * Long polling mode, the Consumer connection timeout(must greater than brokerSuspendMaxTimeMillis), it is not
-		 * recommended to modify
+		 * Long polling mode, the Consumer connection timeout(must greater than
+		 * brokerSuspendMaxTimeMillis), it is not recommended to modify
 		 */
 		private long consumerTimeoutMillisWhenSuspend = 1000 * 30;
 
 		/**
-		 * Ack state handling, including receive, reject, and retry, when a consumption exception occurs.
-		 * see {@link }
+		 * Ack state handling, including receive, reject, and retry, when a consumption
+		 * exception occurs. see {@link }
 		 */
 		private String errAcknowledge;
 
@@ -385,36 +400,34 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 			return pollTimeoutMillis;
 		}
 
-		public Pull setPollTimeoutMillis(long pollTimeoutMillis) {
+		public void setPollTimeoutMillis(long pollTimeoutMillis) {
 			this.pollTimeoutMillis = pollTimeoutMillis;
-			return this;
 		}
 
 		public int getPullThreadNums() {
 			return pullThreadNums;
 		}
 
-		public Pull setPullThreadNums(int pullThreadNums) {
+		public void setPullThreadNums(int pullThreadNums) {
 			this.pullThreadNums = pullThreadNums;
-			return this;
 		}
 
 		public long getTopicMetadataCheckIntervalMillis() {
 			return topicMetadataCheckIntervalMillis;
 		}
 
-		public Pull setTopicMetadataCheckIntervalMillis(long topicMetadataCheckIntervalMillis) {
+		public void setTopicMetadataCheckIntervalMillis(
+				long topicMetadataCheckIntervalMillis) {
 			this.topicMetadataCheckIntervalMillis = topicMetadataCheckIntervalMillis;
-			return this;
 		}
 
 		public long getConsumerTimeoutMillisWhenSuspend() {
 			return consumerTimeoutMillisWhenSuspend;
 		}
 
-		public Pull setConsumerTimeoutMillisWhenSuspend(long consumerTimeoutMillisWhenSuspend) {
+		public void setConsumerTimeoutMillisWhenSuspend(
+				long consumerTimeoutMillisWhenSuspend) {
 			this.consumerTimeoutMillisWhenSuspend = consumerTimeoutMillisWhenSuspend;
-			return this;
 		}
 
 		public String getErrAcknowledge() {
