@@ -78,6 +78,11 @@ public class RocketMQProducerProperties extends RocketMQCommonProperties {
 
 	private String sendFailureChannel;
 
+	private String checkForbiddenHook;
+
+	private String sendMessageHook;
+
+
 	public int getSendMsgTimeout() {
 		return sendMsgTimeout;
 	}
@@ -150,37 +155,20 @@ public class RocketMQProducerProperties extends RocketMQCommonProperties {
 		this.sendCallBack = sendCallBack;
 	}
 
-	public String getMessageQueueSelector() {
-		return messageQueueSelector;
-	}
-
 	public String getTransactionListener() {
 		return transactionListener;
 	}
 
-	public RocketMQProducerProperties setTransactionListener(String transactionListener) {
+	public void setTransactionListener(String transactionListener) {
 		this.transactionListener = transactionListener;
-		return this;
+	}
+
+	public String getMessageQueueSelector() {
+		return messageQueueSelector;
 	}
 
 	public void setMessageQueueSelector(String messageQueueSelector) {
 		this.messageQueueSelector = messageQueueSelector;
-	}
-
-	public enum ProducerType {
-		Normal, Trans;
-
-		public boolean equalsName(String name) {
-			return this.name().equalsIgnoreCase(name);
-		}
-	}
-
-	public enum SendType {
-		OneWay, Async, Sync,;
-
-		public boolean equalsName(String name) {
-			return this.name().equalsIgnoreCase(name);
-		}
 	}
 
 	public String getErrorMessageStrategy() {
@@ -198,4 +186,36 @@ public class RocketMQProducerProperties extends RocketMQCommonProperties {
 	public void setSendFailureChannel(String sendFailureChannel) {
 		this.sendFailureChannel = sendFailureChannel;
 	}
+
+	public String getCheckForbiddenHook() {
+		return checkForbiddenHook;
+	}
+
+	public void setCheckForbiddenHook(String checkForbiddenHook) {
+		this.checkForbiddenHook = checkForbiddenHook;
+	}
+
+	public String getSendMessageHook() {
+		return sendMessageHook;
+	}
+
+	public void setSendMessageHook(String sendMessageHook) {
+		this.sendMessageHook = sendMessageHook;
+	}
+
+	public enum ProducerType {
+		Normal, Trans;
+		public boolean equalsName(String name) {
+			return this.name().equalsIgnoreCase(name);
+		}
+	}
+
+	public enum SendType {
+		OneWay, Async, Sync,;
+
+		public boolean equalsName(String name) {
+			return this.name().equalsIgnoreCase(name);
+		}
+	}
+
 }
