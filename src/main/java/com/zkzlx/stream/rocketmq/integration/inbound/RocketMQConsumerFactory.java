@@ -15,6 +15,7 @@ import org.apache.rocketmq.remoting.RPCHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -29,8 +30,9 @@ public final class RocketMQConsumerFactory {
 			.getLogger(RocketMQConsumerFactory.class);
 
 	public static DefaultMQPushConsumer initPushConsumer(
-			RocketMQConsumerProperties consumerProperties) {
-
+			ExtendedConsumerProperties<RocketMQConsumerProperties> extendedConsumerProperties) {
+		RocketMQConsumerProperties consumerProperties = extendedConsumerProperties
+				.getExtension();
 		Assert.notNull(consumerProperties.getGroup(),
 				"Property 'group' is required - consumerGroup");
 		Assert.notNull(consumerProperties.getNameServer(),
@@ -58,22 +60,28 @@ public final class RocketMQConsumerFactory {
 		consumer.setNamesrvAddr(consumerProperties.getNameServer());
 		consumer.setMessageModel(getMessageModel(consumerProperties.getMessageModel()));
 		consumer.setUseTLS(consumerProperties.getUseTLS());
-		consumer.setPullTimeDelayMillsWhenException(consumerProperties.getPullTimeDelayMillsWhenException());
+		consumer.setPullTimeDelayMillsWhenException(
+				consumerProperties.getPullTimeDelayMillsWhenException());
 		consumer.setPullBatchSize(consumerProperties.getPullBatchSize());
 		consumer.setConsumeFromWhere(consumerProperties.getConsumeFromWhere());
-		consumer.setHeartbeatBrokerInterval(consumerProperties.getHeartbeatBrokerInterval());
-		consumer.setPersistConsumerOffsetInterval(consumerProperties.getPersistConsumerOffsetInterval());
+		consumer.setHeartbeatBrokerInterval(
+				consumerProperties.getHeartbeatBrokerInterval());
+		consumer.setPersistConsumerOffsetInterval(
+				consumerProperties.getPersistConsumerOffsetInterval());
 		consumer.setPullInterval(consumerProperties.getPush().getPullInterval());
+		consumer.setConsumeThreadMin(extendedConsumerProperties.getConcurrency());
+		consumer.setConsumeThreadMax(extendedConsumerProperties.getConcurrency());
 		return consumer;
 	}
 
 	/**
 	 * todo Compatible with versions less than 4.6 ?
-	 * @param consumerProperties
 	 * @return
 	 */
 	public static DefaultLitePullConsumer initPullConsumer(
-			RocketMQConsumerProperties consumerProperties) {
+			ExtendedConsumerProperties<RocketMQConsumerProperties> extendedConsumerProperties) {
+		RocketMQConsumerProperties consumerProperties = extendedConsumerProperties
+				.getExtension();
 		Assert.notNull(consumerProperties.getGroup(),
 				"Property 'group' is required - consumerGroup");
 		Assert.notNull(consumerProperties.getNameServer(),
@@ -102,13 +110,19 @@ public final class RocketMQConsumerFactory {
 		consumer.setNamesrvAddr(consumerProperties.getNameServer());
 		consumer.setMessageModel(getMessageModel(consumerProperties.getMessageModel()));
 		consumer.setUseTLS(consumerProperties.getUseTLS());
-		consumer.setPullTimeDelayMillsWhenException(consumerProperties.getPullTimeDelayMillsWhenException());
-		consumer.setConsumerTimeoutMillisWhenSuspend(consumerProperties.getPull().getConsumerTimeoutMillisWhenSuspend());
+		consumer.setPullTimeDelayMillsWhenException(
+				consumerProperties.getPullTimeDelayMillsWhenException());
+		consumer.setConsumerTimeoutMillisWhenSuspend(
+				consumerProperties.getPull().getConsumerTimeoutMillisWhenSuspend());
 		consumer.setPullBatchSize(consumerProperties.getPullBatchSize());
 		consumer.setConsumeFromWhere(consumerProperties.getConsumeFromWhere());
-		consumer.setHeartbeatBrokerInterval(consumerProperties.getHeartbeatBrokerInterval());
-		consumer.setPersistConsumerOffsetInterval(consumerProperties.getPersistConsumerOffsetInterval());
-		consumer.setPollTimeoutMillis(consumerProperties.getPull().getPollTimeoutMillis());
+		consumer.setHeartbeatBrokerInterval(
+				consumerProperties.getHeartbeatBrokerInterval());
+		consumer.setPersistConsumerOffsetInterval(
+				consumerProperties.getPersistConsumerOffsetInterval());
+		consumer.setPollTimeoutMillis(
+				consumerProperties.getPull().getPollTimeoutMillis());
+		consumer.setPullThreadNums(extendedConsumerProperties.getConcurrency());
 		return consumer;
 	}
 

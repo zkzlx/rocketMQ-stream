@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.context.Lifecycle;
 import org.springframework.integration.IntegrationMessageHeaderAccessor;
 import org.springframework.integration.endpoint.AbstractMessageSource;
@@ -59,17 +60,15 @@ public class RocketMQMessageSource extends AbstractMessageSource<Object>
 	private volatile boolean running;
 
 	private final String topic;
-	private final String group;
 	private final MessageSelector messageSelector;
-	private final RocketMQConsumerProperties consumerProperties;
+	private final ExtendedConsumerProperties<RocketMQConsumerProperties> extendedConsumerProperties;
 
-	public RocketMQMessageSource(String name, String group,
-			RocketMQConsumerProperties consumerProperties) {
+	public RocketMQMessageSource(String name,
+			ExtendedConsumerProperties<RocketMQConsumerProperties> extendedConsumerProperties) {
 		this.topic = name;
-		this.group = group;
-		this.messageSelector = RocketMQUtils
-				.getMessageSelector(consumerProperties.getSubscription());
-		this.consumerProperties = consumerProperties;
+		this.messageSelector = RocketMQUtils.getMessageSelector(
+				extendedConsumerProperties.getExtension().getSubscription());
+		this.extendedConsumerProperties = extendedConsumerProperties;
 
 	}
 
@@ -81,7 +80,8 @@ public class RocketMQMessageSource extends AbstractMessageSource<Object>
 				throw new IllegalStateException(
 						"pull consumer already running. " + this.toString());
 			}
-			this.consumer = RocketMQConsumerFactory.initPullConsumer(consumerProperties);
+			this.consumer = RocketMQConsumerFactory
+					.initPullConsumer(extendedConsumerProperties);
 			// The internal queues are cached by a maximum of 1000
 			this.consumer.setPullThresholdForAll(1000);
 			// This parameter must be 1, otherwise doReceive cannot be handled singly.

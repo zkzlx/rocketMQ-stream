@@ -39,7 +39,7 @@ public class RocketMQUtils {
 
 	public static <T extends RocketMQCommonProperties> T mergeRocketMQProperties(
 			RocketMQBinderConfigurationProperties binderConfigurationProperties,T mqProperties) {
-		if (null == binderConfigurationProperties) {
+		if (null == binderConfigurationProperties || mqProperties == null) {
 			return mqProperties;
 		}
 		if (StringUtils.isEmpty(mqProperties.getNameServer())) {

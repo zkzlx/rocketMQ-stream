@@ -62,9 +62,8 @@ public class RocketMQMessageChannelBinder extends
 
 	// org.springframework.cloud.stream.function.FunctionConfiguration.setupBindingTrigger
 
-	private final RocketMQExtendedBindingProperties extendedBindingProperties ;
+	private final RocketMQExtendedBindingProperties extendedBindingProperties;
 	private final RocketMQBinderConfigurationProperties binderConfigurationProperties;
-
 
 	public RocketMQMessageChannelBinder(
 			RocketMQBinderConfigurationProperties binderConfigurationProperties,
@@ -74,7 +73,6 @@ public class RocketMQMessageChannelBinder extends
 		this.extendedBindingProperties = extendedBindingProperties;
 		this.binderConfigurationProperties = binderConfigurationProperties;
 	}
-
 
 	@Override
 	protected MessageHandler createProducerMessageHandler(ProducerDestination destination,
@@ -88,13 +86,14 @@ public class RocketMQMessageChannelBinder extends
 				.mergeRocketMQProperties(binderConfigurationProperties,
 						extendedProducerProperties.getExtension());
 		RocketMQProducerMessageHandler messageHandler = new RocketMQProducerMessageHandler(
-				destination,extendedProducerProperties, mqProducerProperties);
+				destination, extendedProducerProperties, mqProducerProperties);
 		messageHandler.setApplicationContext(this.getApplicationContext());
 		if (errorChannel != null) {
 			messageHandler.setSendFailureChannel(errorChannel);
 		}
-		MessageConverterConfigurer.PartitioningInterceptor partitioningInterceptor = ((AbstractMessageChannel) channel).getInterceptors().stream().filter(
-				channelInterceptor -> channelInterceptor instanceof MessageConverterConfigurer.PartitioningInterceptor)
+		MessageConverterConfigurer.PartitioningInterceptor partitioningInterceptor = ((AbstractMessageChannel) channel)
+				.getInterceptors().stream()
+				.filter(channelInterceptor -> channelInterceptor instanceof MessageConverterConfigurer.PartitioningInterceptor)
 				.map(channelInterceptor -> ((MessageConverterConfigurer.PartitioningInterceptor) channelInterceptor))
 				.findFirst().orElse(null);
 		messageHandler.setPartitioningInterceptor(partitioningInterceptor);
@@ -120,23 +119,21 @@ public class RocketMQMessageChannelBinder extends
 			throw new RuntimeException(
 					"'group must be configured for channel " + destination.getName());
 		}
-		RocketMQConsumerProperties consumerProperties = RocketMQUtils
-				.mergeRocketMQProperties(binderConfigurationProperties,
-						extendedConsumerProperties.getExtension());
-		consumerProperties.setGroup(group);
+		RocketMQUtils.mergeRocketMQProperties(binderConfigurationProperties,
+				extendedConsumerProperties.getExtension());
+		extendedConsumerProperties.getExtension().setGroup(group);
+
 		RocketMQInboundChannelAdapter inboundChannelAdapter = new RocketMQInboundChannelAdapter(
-				destination.getName(), consumerProperties);
+				destination.getName(), extendedConsumerProperties);
 		ErrorInfrastructure errorInfrastructure = registerErrorInfrastructure(destination,
 				group, extendedConsumerProperties);
 		if (extendedConsumerProperties.getMaxAttempts() > 1) {
 			inboundChannelAdapter
 					.setRetryTemplate(buildRetryTemplate(extendedConsumerProperties));
-			inboundChannelAdapter
-					.setRecoveryCallback(errorInfrastructure.getRecoverer());
+			inboundChannelAdapter.setRecoveryCallback(errorInfrastructure.getRecoverer());
 		}
 		else {
-			inboundChannelAdapter
-					.setErrorChannel(errorInfrastructure.getErrorChannel());
+			inboundChannelAdapter.setErrorChannel(errorInfrastructure.getErrorChannel());
 		}
 		return inboundChannelAdapter;
 	}
@@ -145,16 +142,14 @@ public class RocketMQMessageChannelBinder extends
 	protected PolledConsumerResources createPolledConsumerResources(String name,
 			String group, ConsumerDestination destination,
 			ExtendedConsumerProperties<RocketMQConsumerProperties> extendedConsumerProperties) {
-		RocketMQConsumerProperties consumerProperties = RocketMQUtils
-				.mergeRocketMQProperties(binderConfigurationProperties,
-						extendedConsumerProperties.getExtension());
-		consumerProperties.setGroup(group);
-		RocketMQMessageSource messageSource = new RocketMQMessageSource(name,destination.getName(), consumerProperties);
+		RocketMQUtils.mergeRocketMQProperties(binderConfigurationProperties,
+				extendedConsumerProperties.getExtension());
+		extendedConsumerProperties.getExtension().setGroup(group);
+		RocketMQMessageSource messageSource = new RocketMQMessageSource(name,
+				 extendedConsumerProperties);
 		return new PolledConsumerResources(messageSource, registerErrorInfrastructure(
 				destination, group, extendedConsumerProperties, true));
 	}
-
-
 
 	@Override
 	protected MessageHandler getPolledConsumerErrorMessageHandler(
@@ -187,7 +182,7 @@ public class RocketMQMessageChannelBinder extends
 	 */
 	@Override
 	protected ErrorMessageStrategy getErrorMessageStrategy() {
-		//It can be extended to custom if necessary.
+		// It can be extended to custom if necessary.
 		return new DefaultErrorMessageStrategy();
 	}
 

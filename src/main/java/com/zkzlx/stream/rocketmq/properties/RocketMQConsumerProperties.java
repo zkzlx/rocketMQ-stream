@@ -126,6 +126,7 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 	 */
 	private int consumeMaxSpan = 2000;
 
+
 	private Push push = new Push();
 	private Pull pull = new Pull();
 
