@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.zkzlx.stream.rocketmq.integration.inbound.poll;
+package com.zkzlx.stream.rocketmq.integration.inbound.pull;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -82,8 +82,6 @@ public class RocketMQMessageSource extends AbstractMessageSource<Object>
 			}
 			this.consumer = RocketMQConsumerFactory
 					.initPullConsumer(extendedConsumerProperties);
-			// The internal queues are cached by a maximum of 1000
-			this.consumer.setPullThresholdForAll(1000);
 			// This parameter must be 1, otherwise doReceive cannot be handled singly.
 			this.consumer.setPullBatchSize(1);
 			this.consumer.subscribe(topic, messageSelector);

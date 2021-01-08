@@ -18,8 +18,8 @@ package com.zkzlx.stream.rocketmq;
 
 import com.zkzlx.stream.rocketmq.custom.RocketMQBeanContainerCache;
 import com.zkzlx.stream.rocketmq.extend.ErrorAcknowledgeHandler;
-import com.zkzlx.stream.rocketmq.integration.inbound.poll.DefaultErrorAcknowledgeHandler;
-import com.zkzlx.stream.rocketmq.integration.inbound.poll.RocketMQMessageSource;
+import com.zkzlx.stream.rocketmq.integration.inbound.pull.DefaultErrorAcknowledgeHandler;
+import com.zkzlx.stream.rocketmq.integration.inbound.pull.RocketMQMessageSource;
 import com.zkzlx.stream.rocketmq.integration.inbound.RocketMQInboundChannelAdapter;
 import com.zkzlx.stream.rocketmq.integration.outbound.RocketMQProducerMessageHandler;
 import com.zkzlx.stream.rocketmq.properties.RocketMQBinderConfigurationProperties;
@@ -39,7 +39,6 @@ import org.springframework.cloud.stream.provisioning.ConsumerDestination;
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
 import org.springframework.integration.StaticMessageHeaderAccessor;
 import org.springframework.integration.acks.AcknowledgmentCallback;
-import org.springframework.integration.acks.AcknowledgmentCallback.Status;
 import org.springframework.integration.channel.AbstractMessageChannel;
 import org.springframework.integration.core.MessageProducer;
 import org.springframework.integration.support.DefaultErrorMessageStrategy;

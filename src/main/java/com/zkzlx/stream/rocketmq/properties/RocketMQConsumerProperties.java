@@ -397,6 +397,8 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 		 */
 		private String errAcknowledge;
 
+		private long pullThresholdForAll=1000L;
+
 		public long getPollTimeoutMillis() {
 			return pollTimeoutMillis;
 		}
@@ -437,6 +439,14 @@ public class RocketMQConsumerProperties extends RocketMQCommonProperties {
 
 		public void setErrAcknowledge(String errAcknowledge) {
 			this.errAcknowledge = errAcknowledge;
+		}
+
+		public long getPullThresholdForAll() {
+			return pullThresholdForAll;
+		}
+
+		public void setPullThresholdForAll(long pullThresholdForAll) {
+			this.pullThresholdForAll = pullThresholdForAll;
 		}
 	}
 

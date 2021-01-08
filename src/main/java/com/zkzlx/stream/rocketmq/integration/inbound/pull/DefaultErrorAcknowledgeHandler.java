@@ -1,4 +1,4 @@
-package com.zkzlx.stream.rocketmq.integration.inbound.poll;
+package com.zkzlx.stream.rocketmq.integration.inbound.pull;
 
 import org.springframework.integration.acks.AcknowledgmentCallback.Status;
 import org.springframework.messaging.Message;

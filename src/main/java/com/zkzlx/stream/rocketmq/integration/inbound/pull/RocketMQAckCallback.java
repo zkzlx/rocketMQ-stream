@@ -1,4 +1,4 @@
-package com.zkzlx.stream.rocketmq.integration.inbound.poll;
+package com.zkzlx.stream.rocketmq.integration.inbound.pull;
 
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;

@@ -123,6 +123,8 @@ public final class RocketMQConsumerFactory {
 		consumer.setPollTimeoutMillis(
 				consumerProperties.getPull().getPollTimeoutMillis());
 		consumer.setPullThreadNums(extendedConsumerProperties.getConcurrency());
+		// The internal queues are cached by a maximum of 1000
+		consumer.setPullThresholdForAll(extendedConsumerProperties.getExtension().getPull().getPullThresholdForAll());
 		return consumer;
 	}
 
