@@ -19,7 +19,6 @@ package com.zkzlx.stream;
 
 import java.io.IOException;
 
-import com.zkzlx.stream.RocketMQProduceApplication.MySource;
 import com.zkzlx.stream.test.Foo;
 import com.zkzlx.stream.test.ISource;
 import com.zkzlx.stream.test.SenderService;
@@ -29,29 +28,33 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.stream.annotation.EnableBinding;
+import org.springframework.cloud.stream.annotation.Input;
 import org.springframework.cloud.stream.annotation.Output;
+import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.messaging.SubscribableChannel;
+import org.springframework.messaging.handler.annotation.Payload;
 
 /**
  * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
 @SpringBootApplication
-@EnableBinding({ MySource.class })
+@EnableBinding({ RocketMQForAliYunApplication.MySource.class, RocketMQForAliYunApplication.MySink.class })
 @ComponentScan(value = "com.zkzlx.stream",excludeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE
-		,classes = {RocketMQConsumerApplication.class,RocketMQForAliYunApplication.class}))
-public class RocketMQProduceApplication {
+		,classes = {RocketMQConsumerApplication.class,RocketMQProduceApplication.class}))
+public class RocketMQForAliYunApplication {
+
 	/*
 	 * 需要在VM参数里加入下方配置
-	 * -Dspring.profiles.active=producer
+	 * -Dspring.profiles.active=aliyun
 	 */
 
 	public static void main(String[] args) throws IOException {
-		SpringApplication.run(RocketMQProduceApplication.class);
+		SpringApplication.run(RocketMQForAliYunApplication.class);
 	}
 
 	@Bean
@@ -60,17 +63,8 @@ public class RocketMQProduceApplication {
 	}
 
 	@Bean
-	public CustomRunner customRunner2() {
-		return new CustomRunner("output3");
-	}
-	@Bean
 	public SenderService senderService(){
 		return new SenderService();
-	}
-
-	@Bean
-	public CustomRunnerWithTransactional customRunnerWithTransactional() {
-		return new CustomRunnerWithTransactional();
 	}
 
 	public interface MySource extends ISource {
@@ -78,14 +72,6 @@ public class RocketMQProduceApplication {
 		@Override
 		@Output("output1")
 		MessageChannel output1();
-
-		@Override
-		@Output("output2")
-		MessageChannel output2();
-
-		@Override
-		@Output("output3")
-		MessageChannel output3();
 
 	}
 
@@ -100,32 +86,19 @@ public class RocketMQProduceApplication {
 		@Autowired
 		private SenderService senderService;
 
-		@Autowired
-		private MySource mySource;
-
 		@Override
 		public void run(String... args) throws Exception {
-			if ("output1".equals(this.bindingName)) {
-				int count = 5;
-				for (int index = 1; index <= count; index++) {
-					String msgContent = "msg-" + index;
-					if (index % 3 == 0) {
-						senderService.send(msgContent);
-					}
-					else if (index % 3 == 1) {
-						senderService.sendWithTags(msgContent, "tagStr");
-					}
-					else {
-						senderService.sendObject(new Foo(index, "foo"), "tagObj");
-					}
+			int count = 20;
+			for (int index = 1; index <= count; index++) {
+				String msgContent = "msg-" + index;
+				if (index % 3 == 0) {
+					senderService.send(msgContent);
 				}
-			}
-			else if ("output3".equals(this.bindingName)) {
-				int count = 20;
-				for (int index = 1; index <= count; index++) {
-					String msgContent = "pullMsg-" + index;
-					mySource.output3()
-							.send(MessageBuilder.withPayload(msgContent).build());
+				else if (index % 3 == 1) {
+					senderService.sendWithTags(msgContent, "tagStr");
+				}
+				else {
+					senderService.sendObject(new Foo(index, "foo"), "tagObj");
 				}
 			}
 
@@ -133,21 +106,31 @@ public class RocketMQProduceApplication {
 
 	}
 
-	public static class CustomRunnerWithTransactional implements CommandLineRunner {
 
-		@Autowired
-		private SenderService senderService;
+	@Bean
+	public ReceiveService receiveService(){
+		return new ReceiveService();
+	}
 
-		@Override
-		public void run(String... args) throws Exception {
-			// COMMIT_MESSAGE message
-			senderService.sendTransactionalMsg("transactional-msg1", 1);
-			// ROLLBACK_MESSAGE message
-			senderService.sendTransactionalMsg("transactional-msg2", 2);
-			// ROLLBACK_MESSAGE message
-			senderService.sendTransactionalMsg("transactional-msg3", 3);
-			// COMMIT_MESSAGE message
-			senderService.sendTransactionalMsg("transactional-msg4", 4);
+	public interface MySink {
+
+		@Input("input1")
+		SubscribableChannel input1();
+		@Input("input3")
+		SubscribableChannel input3();
+	}
+
+	public static class ReceiveService {
+
+		@StreamListener("input1")
+		public void receiveInput1(String receiveMsg) {
+			System.out.println("input1 receive: " + receiveMsg);
+		}
+
+
+		@StreamListener("input3")
+		public void receiveInput3(@Payload Foo foo) {
+			System.out.println("input3 receive: " + foo);
 		}
 
 	}

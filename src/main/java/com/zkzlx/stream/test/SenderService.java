@@ -19,10 +19,7 @@ package com.zkzlx.stream.test;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.zkzlx.stream.RocketMQProduceApplication.MySource;
-import com.zkzlx.stream.rocketmq.contants.RocketMQConst;
 import com.zkzlx.stream.rocketmq.contants.RocketMQConst.Headers;
-
 import org.apache.rocketmq.common.message.MessageConst;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +34,7 @@ import org.springframework.util.MimeTypeUtils;
 public class SenderService {
 
 	@Autowired
-	private MySource source;
+	private ISource source;
 
 	public void send(String msg) throws Exception {
 		source.output1().send(MessageBuilder.withPayload(msg).build());

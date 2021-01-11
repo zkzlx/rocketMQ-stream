@@ -17,7 +17,7 @@
 package com.zkzlx.stream;
 
 import com.zkzlx.stream.RocketMQConsumerApplication.MySink;
-import com.zkzlx.stream.test.ReceiveService;
+import com.zkzlx.stream.test.Foo;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -25,6 +25,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.Input;
+import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.cloud.stream.binder.PollableMessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -32,15 +33,21 @@ import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.messaging.SubscribableChannel;
+import org.springframework.messaging.handler.annotation.Payload;
 
 /**
  * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
 @SpringBootApplication
 @EnableBinding({ MySink.class })
-@ComponentScan(value = "com.zkzlx.stream",excludeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE,classes = {RocketMQProduceApplication.class}))
+@ComponentScan(value = "com.zkzlx.stream",excludeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE
+		,classes = {RocketMQProduceApplication.class,RocketMQForAliYunApplication.class}))
 public class RocketMQConsumerApplication {
 
+	/*
+	 * 需要在VM参数里加入下方配置
+	 * -Dspring.profiles.active=consumer
+	 */
 
 	public static void main(String[] args) {
         SpringApplication.run(RocketMQConsumerApplication.class);
@@ -93,6 +100,30 @@ public class RocketMQConsumerApplication {
 				});
 				Thread.sleep(500);
 			}
+		}
+
+	}
+
+	public static class ReceiveService {
+
+		@StreamListener("input1")
+		public void receiveInput1(String receiveMsg) {
+			System.out.println("input1 receive: " + receiveMsg);
+		}
+
+		@StreamListener("input2")
+		public void receiveInput2(String receiveMsg) {
+			System.out.println("input2 receive: " + receiveMsg);
+		}
+
+		@StreamListener("input3")
+		public void receiveInput3(@Payload Foo foo) {
+			System.out.println("input3 receive: " + foo);
+		}
+
+		@StreamListener("input4")
+		public void receiveTransactionalMsg(String transactionMsg) {
+			System.out.println("input4 receive transaction msg: " + transactionMsg);
 		}
 
 	}
