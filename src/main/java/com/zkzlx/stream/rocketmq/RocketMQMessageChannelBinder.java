@@ -59,7 +59,6 @@ public class RocketMQMessageChannelBinder extends
 		implements
 		ExtendedPropertiesBinder<MessageChannel, RocketMQConsumerProperties, RocketMQProducerProperties> {
 
-	// org.springframework.cloud.stream.function.FunctionConfiguration.setupBindingTrigger
 
 	private final RocketMQExtendedBindingProperties extendedBindingProperties;
 	private final RocketMQBinderConfigurationProperties binderConfigurationProperties;
@@ -68,7 +67,7 @@ public class RocketMQMessageChannelBinder extends
 			RocketMQBinderConfigurationProperties binderConfigurationProperties,
 			RocketMQExtendedBindingProperties extendedBindingProperties,
 			RocketMQTopicProvisioner provisioningProvider) {
-		super(null, provisioningProvider);
+		super(new String[0], provisioningProvider);
 		this.extendedBindingProperties = extendedBindingProperties;
 		this.binderConfigurationProperties = binderConfigurationProperties;
 	}
@@ -114,6 +113,7 @@ public class RocketMQMessageChannelBinder extends
 			String group,
 			ExtendedConsumerProperties<RocketMQConsumerProperties> extendedConsumerProperties)
 			throws Exception {
+		//todo support anymous consumer
 		if (StringUtils.isEmpty(group)) {
 			throw new RuntimeException(
 					"'group must be configured for channel " + destination.getName());

@@ -99,9 +99,6 @@ public class RocketMQMessageConverterSupport {
 		Object payloadObj = message.getPayload();
 		byte[] payloads;
 		try {
-			if (null == payloadObj) {
-				throw new RuntimeException("the message cannot be empty");
-			}
 			if (payloadObj instanceof String) {
 				payloads = ((String) payloadObj).getBytes(charset);
 			}
@@ -170,11 +167,9 @@ public class RocketMQMessageConverterSupport {
 			rocketMsg.setFlag(flag);
 			Object waitStoreMsgOkObj = headers
 					.getOrDefault(RocketMQConst.PROPERTY_WAIT_STORE_MSG_OK, "true");
-			rocketMsg.setWaitStoreMsgOK(Boolean.TRUE.equals(waitStoreMsgOkObj));
+			rocketMsg.setWaitStoreMsgOK(Boolean.parseBoolean(String.valueOf(waitStoreMsgOkObj)));
 			headers.entrySet().stream()
-					.filter(entry -> !Objects.equals(entry.getKey(), Headers.FLAG)
-							&& !Objects.equals(entry.getKey(),
-									RocketMQConst.PROPERTY_WAIT_STORE_MSG_OK))
+					.filter(entry -> !Objects.equals(entry.getKey(), Headers.FLAG))
 					.forEach(entry -> {
 						if (!MessageConst.STRING_HASH_SET.contains(entry.getKey())) {
 							rocketMsg.putUserProperty(entry.getKey(),
