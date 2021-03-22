@@ -19,10 +19,12 @@ package com.zkzlx.stream.test;
 import org.apache.rocketmq.client.producer.LocalTransactionState;
 import org.apache.rocketmq.client.producer.TransactionListener;
 import org.apache.rocketmq.common.message.MessageExt;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
+@Component("myTransactionListener")
 public class TransactionListenerImpl implements TransactionListener {
 
 
